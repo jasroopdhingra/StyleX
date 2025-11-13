@@ -1,5 +1,16 @@
 import './index.css';
-import React from "react";
-import { render } from "react-dom";
-import { App } from "./App";
-render(<App />, document.getElementById("root"));
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { AppRouter } from './AppRouter';
+
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+createRoot(rootElement).render(
+  <React.StrictMode>
+    <AppRouter />
+  </React.StrictMode>
+);
