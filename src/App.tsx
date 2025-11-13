@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon } from 'lucide-react';
+import { clothingDatabase, type ClothingItem } from './data/clothing';
+
+type SearchableItem = ClothingItem & { searchable: string };
+
+const tokenize = (text: string) => text
+  .toLowerCase()
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .split(/\s+/)
+  .filter(Boolean);
+
 export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('discover');
@@ -7,6 +17,35 @@ export function App() {
   const [selectedOutfit, setSelectedOutfit] = useState<number | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [recommendations, setRecommendations] = useState<ClothingItem[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [lastQuery, setLastQuery] = useState('');
+
+  const searchableDatabase = useMemo<SearchableItem[]>(() => clothingDatabase.map(item => ({
+    ...item,
+    searchable: `${item.name} ${item.description} ${item.tags.join(' ')}`.toLowerCase()
+  })), []);
+
+  const runSearch = (query: string) => {
+    const trimmed = query.trim();
+    const tokens = tokenize(trimmed);
+
+    if (tokens.length === 0) {
+      return clothingDatabase.slice(0, 2);
+    }
+
+    return searchableDatabase
+      .map(item => {
+      const searchableTokens = tokenize(item.searchable);
+      const directMatches = tokens.reduce((acc, token) => acc + (searchableTokens.includes(token) ? 1 : 0), 0);
+      const tagBoost = item.tags.reduce((acc, tag) => acc + (tokens.some(token => tag.includes(token)) ? 1.5 : 0), 0);
+      return { item, score: directMatches + tagBoost };
+    })
+      .filter(entry => entry.score > 0)
+      .sort((a, b) => b.score - a.score || a.item.id - b.item.id)
+      .slice(0, 2)
+      .map(entry => entry.item);
+  };
   const tabs = [{
     id: 'discover',
     label: 'Discover',
@@ -51,7 +90,15 @@ export function App() {
   }];
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
+    runUserSearch(searchQuery);
+  };
+
+  const runUserSearch = (query: string) => {
+    const sanitizedQuery = query.trim();
+    const nextRecommendations = runSearch(sanitizedQuery);
+    setRecommendations(nextRecommendations);
+    setHasSearched(true);
+    setLastQuery(sanitizedQuery);
   };
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -129,11 +176,57 @@ export function App() {
               <div className="mt-8 text-center">
                 <p className="text-sm text-stone-500 mb-3">Popular searches:</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {['Minimalist basics', 'Vintage denim', 'Office casual', 'Boho chic'].map(tag => <button key={tag} onClick={() => setSearchQuery(tag)} className="px-4 py-2 bg-white border border-stone-200 rounded-full text-sm text-stone-600 hover:border-rose-300 hover:text-rose-600 transition-colors">
+                  {['Minimalist basics', 'Vintage denim', 'Office casual', 'Boho chic'].map(tag => <button key={tag} onClick={() => {
+                setSearchQuery(tag);
+                runUserSearch(tag);
+              }} className="px-4 py-2 bg-white border border-stone-200 rounded-full text-sm text-stone-600 hover:border-rose-300 hover:text-rose-600 transition-colors">
                       {tag}
                     </button>)}
                 </div>
               </div>
+              {hasSearched && <div className="mt-12">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-light text-stone-800">
+                      Curated looks for you
+                    </h3>
+                    <p className="text-sm text-stone-500">
+                      Showing {recommendations.length || 0} of 2 requested pieces
+                    </p>
+                  </div>
+                  <p className="text-sm text-stone-500 mb-6">
+                    {lastQuery ? <>Based on your request for <span className="font-medium text-stone-700">“{lastQuery}”</span></> : 'Serving our editor picks while you search'}
+                  </p>
+                  {recommendations.length > 0 ? <div className="grid gap-6 md:grid-cols-2">
+                        {recommendations.map(item => <div key={item.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow text-left">
+                            <div className="h-64 overflow-hidden">
+                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="p-5 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-lg font-semibold text-stone-800">
+                                  {item.name}
+                                </h4>
+                                <span className="text-rose-600 font-medium">{item.price}</span>
+                              </div>
+                              <p className="text-sm text-stone-600">
+                                {item.description}
+                              </p>
+                              <div className="flex flex-wrap gap-2 pt-2">
+                                {item.tags.map(tag => <span key={tag} className="text-xs uppercase tracking-wide bg-rose-50 text-rose-600 px-2 py-1 rounded-full">
+                                      {tag}
+                                    </span>)}
+                              </div>
+                            </div>
+                          </div>)}
+                      </div> : <div className="bg-white border border-rose-100 rounded-2xl p-6 text-left">
+                        <p className="text-stone-700 font-medium">
+                          We couldn’t find a perfect match for “{lastQuery}”.
+                        </p>
+                        <p className="text-sm text-stone-500 mt-1">
+                          Try another description or adjust your keywords and we’ll curate new looks for you.
+                        </p>
+                      </div>}
+                </div>}
             </div>
           </div>}
         {activeTab === 'try-on' && <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
