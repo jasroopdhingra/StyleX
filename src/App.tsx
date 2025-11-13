@@ -1,5 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon } from 'lucide-react';
+
+type StyleRecommendation = {
+  id: number;
+  title: string;
+  vibe: string;
+  description: string;
+  image: string;
+  tags: string[];
+};
+
+const styleRecommendations: StyleRecommendation[] = [{
+  id: 1,
+  title: 'Coastal Layers',
+  vibe: 'Coastal grandma, relaxed chic',
+  description: 'Airy linens, muted blues and creamy knits for breezy evenings by the water.',
+  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600',
+  tags: ['coastal', 'grandma', 'linen', 'relaxed']
+}, {
+  id: 2,
+  title: 'Minimalist Capsule',
+  vibe: 'Tailored, modern, monochrome',
+  description: 'Structured tailoring paired with premium basics in charcoal and ivory.',
+  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600',
+  tags: ['minimalist', 'office', 'capsule', 'modern']
+}, {
+  id: 3,
+  title: 'Boho Market Day',
+  vibe: 'Free-spirited layers',
+  description: 'Printed maxi dress, woven tote and artisan jewelry for an effortless weekend.',
+  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600&sat=-50',
+  tags: ['boho', 'market', 'weekend', 'prints']
+}, {
+  id: 4,
+  title: 'Streetwear Edge',
+  vibe: 'Sporty, bold, graphic',
+  description: 'Statement bomber, relaxed denim and chunky sneakers for city energy.',
+  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600&hue=10',
+  tags: ['urban', 'street', 'bold', 'denim']
+}];
 export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('discover');
@@ -8,6 +47,8 @@ export function App() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showRipple, setShowRipple] = useState(true);
+  const [searchResults, setSearchResults] = useState<StyleRecommendation[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowRipple(false), 2000);
@@ -55,9 +96,19 @@ export function App() {
     name: 'Urban Street Style',
     image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400'
   }];
+  const runSearch = (queryText: string) => {
+    const query = queryText.trim().toLowerCase();
+    setHasSearched(true);
+    if (!query) {
+      setSearchResults(styleRecommendations.slice(0, 3));
+      return;
+    }
+    const results = styleRecommendations.filter(look => look.tags.some(tag => tag.includes(query)) || look.title.toLowerCase().includes(query) || look.vibe.toLowerCase().includes(query));
+    setSearchResults(results);
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
+    runSearch(searchQuery);
   };
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,11 +188,54 @@ export function App() {
               <div className="mt-8 text-center">
                 <p className="text-sm text-slate-400 mb-3">Popular searches:</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {['Minimalist basics', 'Vintage denim', 'Office casual', 'Boho chic'].map(tag => <button key={tag} onClick={() => setSearchQuery(tag)} className="px-4 py-2 bg-slate-950/50 border border-slate-800 rounded-full text-sm text-slate-300 hover:border-cyan-400 hover:text-cyan-200 transition-colors">
+                  {['Minimalist basics', 'Vintage denim', 'Office casual', 'Boho chic'].map(tag => <button key={tag} onClick={() => {
+                  setSearchQuery(tag);
+                  runSearch(tag);
+                }} className="px-4 py-2 bg-slate-950/50 border border-slate-800 rounded-full text-sm text-slate-300 hover:border-cyan-400 hover:text-cyan-200 transition-colors">
                       {tag}
                     </button>)}
                 </div>
               </div>
+              {hasSearched && <div className="mt-12 space-y-6">
+                  <div className="flex flex-col gap-1 text-left">
+                    <h3 className="text-2xl font-semibold text-white">
+                      Curated looks for {searchQuery ? `"${searchQuery}"` : 'you'}
+                    </h3>
+                    <p className="text-slate-400">
+                      Generated from our AI trend index and your search mood.
+                    </p>
+                  </div>
+                  {searchResults.length === 0 ? <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-300">
+                      <p className="font-medium text-lg">
+                        We couldn’t find a perfect match.
+                      </p>
+                      <p className="text-sm text-slate-400 mt-2">
+                        Try another prompt or pick one of the popular searches above.
+                      </p>
+                    </div> : <div className="grid gap-5 sm:grid-cols-2">
+                      {searchResults.map(look => <div key={look.id} className="bg-slate-950/70 border border-slate-800 rounded-2xl overflow-hidden shadow-xl shadow-cyan-500/5">
+                          <img src={look.image} alt={look.title} className="w-full h-48 object-cover" />
+                          <div className="p-5 space-y-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80 mb-1">
+                                {look.vibe}
+                              </p>
+                              <h4 className="text-xl font-semibold text-white">
+                                {look.title}
+                              </h4>
+                            </div>
+                            <p className="text-sm text-slate-300">
+                              {look.description}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {look.tags.map(tag => <span key={tag} className="px-3 py-1 text-xs rounded-full bg-slate-900/80 border border-slate-800 text-slate-300">
+                                  {tag}
+                                </span>)}
+                            </div>
+                          </div>
+                        </div>)}
+                    </div>}
+                </div>}
             </div>
           </div>}
         {activeTab === 'try-on' && <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
