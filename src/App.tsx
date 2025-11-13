@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon } from 'lucide-react';
+import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon, SunIcon, MoonIcon } from 'lucide-react';
 
 type StyleRecommendation = {
   id: number;
@@ -173,6 +173,19 @@ const STOP_WORDS = new Set(['with', 'from', 'that', 'this', 'your', 'into', 'the
 
 const stripHtml = (value: string) => value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&amp;|&#39;|&quot;/g, ' ').replace(/\s+/g, ' ').trim();
 
+type Theme = 'dark' | 'light';
+const THEME_STORAGE_KEY = 'stylex-theme';
+const getPreferredTheme = (): Theme => {
+  if (typeof window === 'undefined') {
+    return 'dark';
+  }
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === 'dark' || stored === 'light') {
+    return stored;
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
 const extractHeadlines = (html: string) => {
   const matches = html.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/gis) ?? [];
   const cleaned: string[] = [];
@@ -299,10 +312,30 @@ export function App() {
     items: []
   })));
   const [trendLastUpdated, setTrendLastUpdated] = useState<Date | null>(null);
+  const [theme, setTheme] = useState<Theme>(() => {
+    const preferred = getPreferredTheme();
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = preferred;
+    }
+    return preferred;
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setShowRipple(false), 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = theme;
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(current => current === 'dark' ? 'light' : 'dark');
   }, []);
 
   const loadTrends = useCallback(async () => {
@@ -476,7 +509,7 @@ export function App() {
                 </span>
               </div>
               {/* Tabs */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-3">
                 {tabs.map(tab => {
                 const Icon = tab.icon;
                 return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all border ${activeTab === tab.id ? 'bg-cyan-500/10 text-cyan-200 border-cyan-500/40 shadow-lg shadow-cyan-500/10' : 'text-slate-400 border-transparent hover:border-slate-700 hover:bg-slate-900/60'}`}>
@@ -484,6 +517,9 @@ export function App() {
                       <span className="text-sm font-medium">{tab.label}</span>
                     </button>;
               })}
+                <button type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="ml-1 inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-700 text-slate-200 hover:text-cyan-300 transition-colors">
+                  {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+                </button>
               </div>
             </div>
           </div>
