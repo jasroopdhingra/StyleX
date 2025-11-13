@@ -419,11 +419,23 @@ export function App() {
   const runSearch = (queryText: string) => {
     const query = queryText.trim().toLowerCase();
     setHasSearched(true);
+
     if (!query) {
       setSearchResults(styleRecommendations.slice(0, 3));
       return;
     }
-    const results = styleRecommendations.filter(look => look.tags.some(tag => tag.includes(query)) || look.title.toLowerCase().includes(query) || look.vibe.toLowerCase().includes(query));
+
+    const keywords = query.split(/\s+/).filter(Boolean);
+    const matchesKeyword = (text: string) => {
+      const normalized = text.toLowerCase();
+      return keywords.some(word => normalized.includes(word) || word.includes(normalized));
+    };
+
+    const results = styleRecommendations.filter(look => {
+      const searchableFields = [look.title, look.vibe, ...look.tags];
+      return searchableFields.some(matchesKeyword);
+    });
+
     setSearchResults(results);
   };
   const handleSearch = (e: React.FormEvent) => {
