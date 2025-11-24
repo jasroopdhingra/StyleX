@@ -301,6 +301,8 @@ export function App() {
   const [customOutfitImage, setCustomOutfitImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCapturingSelfie, setIsCapturingSelfie] = useState(false);
+  const [isCapturingOutfit, setIsCapturingOutfit] = useState(false);
   const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [showRipple, setShowRipple] = useState(true);
   const [searchResults, setSearchResults] = useState<StyleRecommendation[]>([]);
@@ -345,6 +347,41 @@ export function App() {
 
   const toggleTheme = useCallback(() => {
     setTheme(current => current === 'dark' ? 'light' : 'dark');
+  }, []);
+
+  const captureImageFromCamera = useCallback(async (facingMode: 'user' | 'environment') => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      throw new Error('Camera is not available on this device.');
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+    const track = stream.getVideoTracks()[0];
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.playsInline = true;
+    await video.play();
+    await new Promise<void>(resolve => {
+      if (video.readyState >= 2) {
+        resolve();
+        return;
+      }
+      video.onloadedmetadata = () => resolve();
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 640;
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      stream.getTracks().forEach(mediaTrack => mediaTrack.stop());
+      throw new Error('Unable to capture an image from the camera.');
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    stream.getTracks().forEach(mediaTrack => mediaTrack.stop());
+    return dataUrl;
   }, []);
 
   const loadTrends = useCallback(async () => {
@@ -525,9 +562,11 @@ export function App() {
       reader.onloadend = () => {
         setUserPhoto(reader.result as string);
         setGeneratedImage(null);
+        setTryOnError(null);
       };
       reader.readAsDataURL(file);
     }
+    e.target.value = '';
   };
   const handleOutfitUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -537,14 +576,59 @@ export function App() {
         setCustomOutfitImage(reader.result as string);
         setSelectedOutfit('custom');
         setGeneratedImage(null);
+        setTryOnError(null);
       };
       reader.readAsDataURL(file);
     }
+    e.target.value = '';
   };
-  const triggerSelfieUpload = () => selfieUploadInputRef.current?.click();
-  const triggerSelfieCapture = () => selfieCaptureInputRef.current?.click();
-  const triggerOutfitUpload = () => outfitUploadInputRef.current?.click();
-  const triggerOutfitCapture = () => outfitCaptureInputRef.current?.click();
+  const triggerSelfieUpload = () => {
+    if (selfieUploadInputRef.current) {
+      selfieUploadInputRef.current.value = '';
+      selfieUploadInputRef.current.click();
+    }
+  };
+  const triggerSelfieCapture = async () => {
+    setIsCapturingSelfie(true);
+    try {
+      const captured = await captureImageFromCamera('user');
+      setUserPhoto(captured);
+      setGeneratedImage(null);
+      setTryOnError(null);
+    } catch (error) {
+      console.warn('Camera capture failed, falling back to file input', error);
+      if (selfieCaptureInputRef.current) {
+        selfieCaptureInputRef.current.value = '';
+        selfieCaptureInputRef.current.click();
+      }
+    } finally {
+      setIsCapturingSelfie(false);
+    }
+  };
+  const triggerOutfitUpload = () => {
+    if (outfitUploadInputRef.current) {
+      outfitUploadInputRef.current.value = '';
+      outfitUploadInputRef.current.click();
+    }
+  };
+  const triggerOutfitCapture = async () => {
+    setIsCapturingOutfit(true);
+    try {
+      const captured = await captureImageFromCamera('environment');
+      setCustomOutfitImage(captured);
+      setSelectedOutfit('custom');
+      setGeneratedImage(null);
+      setTryOnError(null);
+    } catch (error) {
+      console.warn('Camera capture failed, falling back to file input', error);
+      if (outfitCaptureInputRef.current) {
+        outfitCaptureInputRef.current.value = '';
+        outfitCaptureInputRef.current.click();
+      }
+    } finally {
+      setIsCapturingOutfit(false);
+    }
+  };
   const selectedOutfitImage = selectedOutfit === 'custom' ? customOutfitImage : selectedOutfit === null ? null : (mockOutfits.find(look => look.id === selectedOutfit)?.image ?? null);
   const handleGenerate = async () => {
     if (!userPhoto || !selectedOutfitImage) return;
@@ -839,9 +923,9 @@ export function App() {
                             <UploadIcon className="w-4 h-4" />
                             Upload from library
                           </button>
-                          <button type="button" onClick={triggerSelfieCapture} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
-                            <ImageIcon className="w-4 h-4" />
-                            Take a photo
+                          <button type="button" onClick={triggerSelfieCapture} disabled={isCapturingSelfie} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100 disabled:opacity-70 disabled:cursor-not-allowed">
+                            {isCapturingSelfie ? <span className="w-4 h-4 border-2 border-slate-200 border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                            {isCapturingSelfie ? 'Opening camera...' : 'Take a photo'}
                           </button>
                         </div>
                         <div onClick={triggerSelfieUpload} className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-cyan-400 transition-colors bg-slate-900/40">
@@ -897,9 +981,9 @@ export function App() {
                             <UploadIcon className="w-3 h-3" />
                             Upload
                           </button>
-                          <button type="button" onClick={triggerOutfitCapture} className="inline-flex items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
-                            <ImageIcon className="w-3 h-3" />
-                            Take photo
+                          <button type="button" onClick={triggerOutfitCapture} disabled={isCapturingOutfit} className="inline-flex items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100 disabled:opacity-70 disabled:cursor-not-allowed">
+                            {isCapturingOutfit ? <span className="w-3 h-3 border border-slate-200 border-t-transparent rounded-full animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                            {isCapturingOutfit ? 'Opening camera...' : 'Take photo'}
                           </button>
                         </div>
                       </div>
@@ -930,6 +1014,9 @@ export function App() {
                   <h3 className="text-lg font-medium text-white mb-4">
                     3. Your Virtual Try-On
                   </h3>
+                  <p className="text-xs text-slate-400 mb-4">
+                    We blend your selfie with the outfit image to render an AI try-on preview tailored to you.
+                  </p>
                   {!generatedImage ? <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-slate-700 rounded-xl bg-slate-900/40">
                       <ImageIcon className="w-16 h-16 text-slate-500 mb-3" />
                       <p className="text-slate-400 text-center px-6">
