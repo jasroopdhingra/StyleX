@@ -303,6 +303,9 @@ export function App() {
   const [showRipple, setShowRipple] = useState(true);
   const [searchResults, setSearchResults] = useState<StyleRecommendation[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [trendingClusters, setTrendingClusters] = useState<TrendCluster[]>(FALLBACK_TRENDS);
   const [isLoadingTrends, setIsLoadingTrends] = useState(false);
   const [trendError, setTrendError] = useState<string | null>(null);
@@ -471,9 +474,43 @@ export function App() {
 
     setSearchResults(results);
   };
+  const fetchAiRecommendation = useCallback(async (prompt: string) => {
+    setIsLoadingResponse(true);
+    setAiError(null);
+    setAiResponse(null);
+
+    try {
+      const response = await fetch('/api/generate-style', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+      if (!response.ok || typeof data?.response !== 'string') {
+        throw new Error(data?.error || 'Unable to generate response');
+      }
+
+      setAiResponse(data.response);
+    } catch (error) {
+      console.error('Failed to fetch AI recommendation', error);
+      setAiError('Unable to generate a style brief right now. Please try again.');
+    } finally {
+      setIsLoadingResponse(false);
+    }
+  }, []);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     runSearch(searchQuery);
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      fetchAiRecommendation(trimmed);
+    } else {
+      setAiResponse(null);
+      setAiError(null);
+    }
   };
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -572,6 +609,25 @@ export function App() {
                     <p className="text-slate-400">
                       Generated from our AI trend index and your search mood.
                     </p>
+                  </div>
+                  <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-cyan-500/10">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">StyleX AI Stylist</p>
+                        <h4 className="text-xl font-semibold text-white mt-1">Prompt response</h4>
+                        <p className="text-sm text-slate-400">We send your vibe to our LLM for a fresh outfit briefing.</p>
+                      </div>
+                      {isLoadingResponse && <div className="w-8 h-8 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin" aria-label="Loading AI response" />}
+                    </div>
+                    <div className="mt-4 text-slate-200 space-y-2">
+                      {aiError && <p className="text-sm text-rose-300">{aiError}</p>}
+                      {aiResponse && aiResponse.split('\n').map((line, index) => <p key={index} className="text-sm leading-relaxed text-slate-200">
+                            {line}
+                          </p>)}
+                      {!aiResponse && !aiError && !isLoadingResponse && <p className="text-sm text-slate-400">
+                          Enter a clothing prompt above to receive a personalized outfit brief.
+                        </p>}
+                    </div>
                   </div>
                   {searchResults.length === 0 ? <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-300">
                       <p className="font-medium text-lg">
