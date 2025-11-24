@@ -1,7 +1,5 @@
 import { createServer } from 'node:http';
 
-const openaiApiKey = process.env.OPENAI_API_KEY;
-
 const buildPrompt = (userPrompt) => `You are a concise fashion AI. Given the user's description, output a short style brief followed by three outfit bullet points. Keep it under 120 words. User prompt: "${userPrompt}"`;
 
 const sendJson = (res, status, payload) => {
@@ -54,46 +52,28 @@ const handleGenerateStyle = async (req, res) => {
       return;
     }
 
-    if (!openaiApiKey) {
-      sendJson(res, 200, {
-        response: `AI is offline. Here is a quick inspiration for "${prompt}":\n- Light layers with breathable fabrics\n- Mix one statement piece with everyday basics\n- Add a textured accessory to finish the look`,
-        source: 'fallback'
-      });
-      return;
-    }
-
-    const completionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const pollinationsUrl = `https://text.pollinations.ai/${encodeURIComponent(buildPrompt(prompt))}`;
+    const completionResponse = await fetch(pollinationsUrl, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${openaiApiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a friendly but concise fashion stylist who returns tight outfit suggestions.' },
-          { role: 'user', content: buildPrompt(prompt) }
-        ],
-        max_tokens: 220,
-        temperature: 0.7
-      })
+        Accept: 'text/plain'
+      }
     });
 
     if (!completionResponse.ok) {
       const errorText = await completionResponse.text();
-      console.error('OpenAI error:', completionResponse.status, errorText);
+      console.error('Pollinations error:', completionResponse.status, errorText);
       sendJson(res, 502, { error: 'Language model returned an error.' });
       return;
     }
 
-    const json = await completionResponse.json();
-    const message = json?.choices?.[0]?.message?.content?.trim();
+    const message = (await completionResponse.text()).trim();
     if (!message) {
       sendJson(res, 502, { error: 'No response from the language model.' });
       return;
     }
 
-    sendJson(res, 200, { response: message, source: 'openai' });
+    sendJson(res, 200, { response: message, source: 'pollinations' });
   } catch (error) {
     console.error('LLM generation failed', error);
     sendJson(res, 500, { error: 'Failed to generate a style response.' });
