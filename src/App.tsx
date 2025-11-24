@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon, SunIcon, MoonIcon } from 'lucide-react';
 
 type StyleRecommendation = {
@@ -297,9 +297,11 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('discover');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [selectedOutfit, setSelectedOutfit] = useState<number | null>(null);
+  const [selectedOutfit, setSelectedOutfit] = useState<number | 'custom' | null>(null);
+  const [customOutfitImage, setCustomOutfitImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [tryOnError, setTryOnError] = useState<string | null>(null);
   const [showRipple, setShowRipple] = useState(true);
   const [searchResults, setSearchResults] = useState<StyleRecommendation[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -322,6 +324,10 @@ export function App() {
     }
     return preferred;
   });
+  const selfieUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const selfieCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const outfitUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const outfitCaptureInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowRipple(false), 2000);
@@ -518,18 +524,57 @@ export function App() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setUserPhoto(reader.result as string);
+        setGeneratedImage(null);
       };
       reader.readAsDataURL(file);
     }
   };
-  const handleGenerate = () => {
-    if (!userPhoto || selectedOutfit === null) return;
+  const handleOutfitUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCustomOutfitImage(reader.result as string);
+        setSelectedOutfit('custom');
+        setGeneratedImage(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const triggerSelfieUpload = () => selfieUploadInputRef.current?.click();
+  const triggerSelfieCapture = () => selfieCaptureInputRef.current?.click();
+  const triggerOutfitUpload = () => outfitUploadInputRef.current?.click();
+  const triggerOutfitCapture = () => outfitCaptureInputRef.current?.click();
+  const selectedOutfitImage = selectedOutfit === 'custom' ? customOutfitImage : selectedOutfit === null ? null : (mockOutfits.find(look => look.id === selectedOutfit)?.image ?? null);
+  const handleGenerate = async () => {
+    if (!userPhoto || !selectedOutfitImage) return;
     setIsGenerating(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      setGeneratedImage('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600');
+    setTryOnError(null);
+
+    try {
+      const response = await fetch('/api/virtual-try-on', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userImage: userPhoto,
+          outfitImage: selectedOutfitImage
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || typeof data?.imageUrl !== 'string') {
+        throw new Error(data?.error || 'Failed to generate try-on');
+      }
+
+      setGeneratedImage(data.imageUrl);
+    } catch (error) {
+      console.error('Failed to generate try-on image', error);
+      setTryOnError('Unable to generate your try-on right now. Please try again.');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
   return <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-slate-100">
       {showRipple && <div className="gradient-ripple absolute inset-0" />}
@@ -771,29 +816,63 @@ export function App() {
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Left Column - Upload & Select */}
                 <div className="space-y-6">
+                  <input ref={selfieUploadInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                  <input ref={selfieCaptureInputRef} type="file" className="hidden" accept="image/*" capture="user" onChange={handlePhotoUpload} />
+                  <input ref={outfitUploadInputRef} type="file" className="hidden" accept="image/*" onChange={handleOutfitUpload} />
+                  <input ref={outfitCaptureInputRef} type="file" className="hidden" accept="image/*" capture="environment" onChange={handleOutfitUpload} />
                   {/* Upload Photo */}
-                  <div className="bg-slate-950/60 rounded-2xl shadow-2xl shadow-cyan-500/10 border border-slate-800 p-6">
-                    <h3 className="text-lg font-medium text-white mb-4">
-                      1. Upload Your Photo
-                    </h3>
-                    {!userPhoto ? <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-cyan-400 transition-colors bg-slate-900/40">
-                        <UploadIcon className="w-12 h-12 text-slate-400 mb-3" />
-                        <span className="text-sm text-slate-300">
-                          Click to upload your photo
-                        </span>
-                        <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-                      </label> : <div className="relative">
-                        <img src={userPhoto} alt="Your photo" className="w-full h-64 object-cover rounded-xl" />
-                        <button onClick={() => setUserPhoto(null)} className="absolute top-2 right-2 bg-slate-900/80 px-3 py-1 rounded-lg text-sm text-slate-200 hover:bg-slate-900">
+                  <div className="bg-slate-950/60 rounded-2xl shadow-2xl shadow-cyan-500/10 border border-slate-800 p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-medium text-white">
+                          1. Upload Your Photo
+                        </h3>
+                        <p className="text-xs text-slate-400">Upload or take a quick snap from your camera.</p>
+                      </div>
+                      {userPhoto && <button onClick={() => setUserPhoto(null)} className="text-xs px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:border-cyan-400 hover:text-cyan-200">
                           Change
-                        </button>
+                        </button>}
+                    </div>
+                    {!userPhoto ? <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <button type="button" onClick={triggerSelfieUpload} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
+                            <UploadIcon className="w-4 h-4" />
+                            Upload from library
+                          </button>
+                          <button type="button" onClick={triggerSelfieCapture} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
+                            <ImageIcon className="w-4 h-4" />
+                            Take a photo
+                          </button>
+                        </div>
+                        <div onClick={triggerSelfieUpload} className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-cyan-400 transition-colors bg-slate-900/40">
+                          <UploadIcon className="w-12 h-12 text-slate-400 mb-3" />
+                          <span className="text-sm text-slate-300">
+                            Drop a selfie or tap to upload
+                          </span>
+                        </div>
+                      </div> : <div className="relative">
+                        <img src={userPhoto} alt="Your photo" className="w-full h-64 object-cover rounded-xl" />
+                        <p className="absolute bottom-2 left-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] uppercase tracking-[0.2em] text-white">
+                          Person reference
+                        </p>
                       </div>}
                   </div>
                   {/* Select Outfit */}
-                  <div className="bg-slate-950/60 rounded-2xl shadow-2xl shadow-cyan-500/10 border border-slate-800 p-6">
-                    <h3 className="text-lg font-medium text-white mb-4">
-                      2. Select an Outfit
-                    </h3>
+                  <div className="bg-slate-950/60 rounded-2xl shadow-2xl shadow-cyan-500/10 border border-slate-800 p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-medium text-white">
+                          2. Select an Outfit
+                        </h3>
+                        <p className="text-xs text-slate-400">Choose a sample or upload a photo of your own look.</p>
+                      </div>
+                      {customOutfitImage && <button onClick={() => {
+                    setCustomOutfitImage(null);
+                    setSelectedOutfit(null);
+                  }} className="text-xs px-3 py-1 rounded-lg border border-slate-700 text-slate-200 hover:border-cyan-400 hover:text-cyan-200">
+                          Clear
+                        </button>}
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       {mockOutfits.map(outfit => <button key={outfit.id} onClick={() => setSelectedOutfit(outfit.id)} className={`relative rounded-xl overflow-hidden border-2 transition-all ${selectedOutfit === outfit.id ? 'border-cyan-400 shadow-lg shadow-cyan-500/30' : 'border-slate-800 hover:border-cyan-400/70'}`}>
                           <img src={outfit.image} alt={outfit.name} className="w-full h-32 object-cover" />
@@ -807,9 +886,35 @@ export function App() {
                             </div>}
                         </button>)}
                     </div>
+                    <div className="border border-dashed border-slate-800 rounded-xl p-4 bg-slate-900/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-white">Upload your outfit</p>
+                          <p className="text-xs text-slate-400">Use a mirror pic or flat lay to test fit.</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={triggerOutfitUpload} className="inline-flex items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
+                            <UploadIcon className="w-3 h-3" />
+                            Upload
+                          </button>
+                          <button type="button" onClick={triggerOutfitCapture} className="inline-flex items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/70 hover:text-cyan-100">
+                            <ImageIcon className="w-3 h-3" />
+                            Take photo
+                          </button>
+                        </div>
+                      </div>
+                      {!customOutfitImage ? <div onClick={triggerOutfitUpload} className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-cyan-400 transition-colors bg-slate-950/40">
+                          <span className="text-sm text-slate-300">Drop or tap to add your outfit</span>
+                        </div> : <div className="relative">
+                          <img src={customOutfitImage} alt="Uploaded outfit" className="w-full h-40 object-cover rounded-xl" />
+                          <p className="absolute bottom-2 left-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] uppercase tracking-[0.2em] text-white">
+                            Outfit reference
+                          </p>
+                        </div>}
+                    </div>
                   </div>
                   {/* Generate Button */}
-                  <button onClick={handleGenerate} disabled={!userPhoto || selectedOutfit === null || isGenerating} className="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-950 font-semibold py-4 px-8 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 flex items-center justify-center gap-2">
+                  <button onClick={handleGenerate} disabled={!userPhoto || !selectedOutfitImage || isGenerating} className="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-950 font-semibold py-4 px-8 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 flex items-center justify-center gap-2">
                     {isGenerating ? <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Generating...
@@ -818,6 +923,7 @@ export function App() {
                         Generate Try-On
                       </>}
                   </button>
+                  {tryOnError && <p className="text-sm text-rose-300">{tryOnError}</p>}
                 </div>
                 {/* Right Column - Result */}
                 <div className="bg-slate-950/60 rounded-2xl shadow-2xl shadow-cyan-500/10 border border-slate-800 p-6">
