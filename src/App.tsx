@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon, SunIcon, MoonIcon } from 'lucide-react';
+import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon, SunIcon, MoonIcon, Link2Icon, BookmarkCheckIcon, BookmarkPlusIcon } from 'lucide-react';
 
 type StyleRecommendation = {
   id: number;
@@ -22,6 +22,15 @@ type TrendCluster = {
   title: string;
   summary: string;
   examples: TrendExample[];
+};
+
+type ProductSuggestion = {
+  id: string;
+  title: string;
+  retailer: string;
+  url: string;
+  reason: string;
+  vibe: string;
 };
 
 type TrendSourceStatus = {
@@ -170,6 +179,72 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
 }];
 
 const STOP_WORDS = new Set(['with', 'from', 'that', 'this', 'your', 'into', 'their', 'about', 'after', 'these', 'those', 'while', 'where', 'which', 'style', 'trend', 'looks', 'fashion', 'season']);
+const SAVED_SUGGESTIONS_KEY = 'stylex-saved-links';
+
+const PRODUCT_LIBRARY: ProductSuggestion[] = [{
+  id: 'tennis-skort',
+  title: 'Pleated performance skort',
+  retailer: 'Lululemon',
+  url: 'https://shop.lululemon.com/p/womens-skirts-and-dresses/Align-High-Rise-Skort/_/prod11190162',
+  reason: 'Matches the tenniscore wave with breathable fabric and built-in shorts.',
+  vibe: 'Tenniscore'
+}, {
+  id: 'quiet-luxe-trouser',
+  title: 'Effortless pleated trousers',
+  retailer: 'Aritzia',
+  url: 'https://www.aritzia.com/us/en/product/the-effortless-pant/98721.html',
+  reason: 'Pairs with knit tanks or blazers for the quiet luxury polish.',
+  vibe: 'Quiet luxury'
+}, {
+  id: 'sheer-mesh-top',
+  title: 'Sheer mesh long-sleeve',
+  retailer: 'Urban Outfitters',
+  url: 'https://www.urbanoutfitters.com/shop/out-from-under-modern-love-corset-top',
+  reason: 'Layer over bralettes or under slip dresses for runway-inspired transparency.',
+  vibe: 'Sheer layering'
+}, {
+  id: 'metallic-midi',
+  title: 'Metallic slip skirt',
+  retailer: 'J.Crew',
+  url: 'https://www.jcrew.com/p/womens/categories/skirts/midi/metallic-slip-skirt/BP356',
+  reason: 'Brings the liquid-metal trend into a versatile midi silhouette.',
+  vibe: 'Metallics'
+}, {
+  id: 'tech-shell',
+  title: 'Waterproof utility shell',
+  retailer: 'Arc’teryx',
+  url: 'https://www.arcteryx.com/us/en/shop/womens/beta-jacket',
+  reason: 'Techwear edge with taped seams and an ultralight packable build.',
+  vibe: 'Techwear'
+}, {
+  id: 'denim-barrel',
+  title: 'Barrel-leg denim',
+  retailer: 'Everlane',
+  url: 'https://www.everlane.com/products/womens-barrel-pant-ankle-vintage-indigo',
+  reason: 'A sculpted shape that nods to TikTok-loved sculptural denim.',
+  vibe: 'Directional denim'
+}, {
+  id: 'raffia-tote',
+  title: 'Raffia market tote',
+  retailer: 'Mango',
+  url: 'https://shop.mango.com/us/women/bags-and-wallets-shopper/raffia-shopper-bag_47084387.html',
+  reason: 'Coastal textures keep resort looks light and effortless.',
+  vibe: 'Coastal resort'
+}, {
+  id: 'leather-biker',
+  title: 'Cropped leather biker jacket',
+  retailer: 'AllSaints',
+  url: 'https://www.allsaints.com/women/leather-jackets/balfern-leather-biker-jacket/WO084',
+  reason: 'Adds moto grit to slip dresses or denim with timeless hardware.',
+  vibe: 'Moto minimal'
+}, {
+  id: 'mesh-ballerina-flat',
+  title: 'Mesh ballerina flats',
+  retailer: 'Vagabond',
+  url: 'https://vagabond.com/us/lettie-5736-101-20',
+  reason: 'Balletcore meets breathability—perfect with puddle pants.',
+  vibe: 'Balletcore'
+}];
 
 const stripHtml = (value: string) => value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&amp;|&#39;|&quot;/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -270,6 +345,36 @@ const uniqueExamples = (examples: TrendExample[]) => {
   });
 };
 
+const keywordScore = (text: string, keywords: string[]) => {
+  const normalized = text.toLowerCase();
+  return keywords.reduce((score, keyword) => normalized.includes(keyword.toLowerCase()) ? score + 1 : score, 0);
+};
+
+const buildProductSuggestions = (query: string, clusters: TrendCluster[]): ProductSuggestion[] => {
+  const queryKeywords = query.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const clusterKeywords = clusters.flatMap(cluster => `${cluster.title} ${cluster.summary}`.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)).slice(0, 30);
+  const signals = [...queryKeywords, ...clusterKeywords];
+
+  const scored = PRODUCT_LIBRARY.map(suggestion => {
+    const score = keywordScore(suggestion.vibe, signals) + keywordScore(suggestion.title, signals) + keywordScore(suggestion.reason, signals);
+    return { suggestion, score };
+  }).sort((a, b) => b.score - a.score || a.suggestion.title.localeCompare(b.suggestion.title));
+
+  const top = scored.filter(entry => entry.score > 0).map(entry => entry.suggestion).slice(0, 3);
+  const fallback = scored.slice(0, 3).map(entry => entry.suggestion);
+  const unique = (items: ProductSuggestion[]) => {
+    const seen = new Set<string>();
+    return items.filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  };
+
+  const result = unique([...top, ...fallback]);
+  return result.slice(0, 3);
+};
+
 const extractKeywordsFromExamples = (examples: TrendExample[]) => {
   const counts: Record<string, number> = {};
   examples.forEach(example => {
@@ -339,6 +444,23 @@ export function App() {
     items: []
   })));
   const [trendLastUpdated, setTrendLastUpdated] = useState<Date | null>(null);
+  const [productSuggestions, setProductSuggestions] = useState<ProductSuggestion[]>([]);
+  const [savedSuggestions, setSavedSuggestions] = useState<ProductSuggestion[]>(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    try {
+      const stored = window.localStorage.getItem(SAVED_SUGGESTIONS_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (error) {
+      console.warn('Unable to read saved suggestions from storage', error);
+    }
+    return [];
+  });
   const [theme, setTheme] = useState<Theme>(() => {
     const preferred = getPreferredTheme();
     if (typeof document !== 'undefined') {
@@ -355,6 +477,11 @@ export function App() {
     const timer = setTimeout(() => setShowRipple(false), 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SAVED_SUGGESTIONS_KEY, JSON.stringify(savedSuggestions));
+  }, [savedSuggestions]);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -473,6 +600,11 @@ export function App() {
   useEffect(() => {
     loadTrends();
   }, [loadTrends]);
+
+  useEffect(() => {
+    if (!hasSearched) return;
+    refreshProductSuggestions(searchQuery.trim());
+  }, [hasSearched, refreshProductSuggestions, searchQuery]);
   const tabs = [{
     id: 'discover',
     label: 'Discover',
@@ -537,6 +669,9 @@ export function App() {
 
     setSearchResults(results);
   };
+  const refreshProductSuggestions = useCallback((query: string) => {
+    setProductSuggestions(buildProductSuggestions(query, trendingClusters));
+  }, [trendingClusters]);
   const fetchAiRecommendation = useCallback(async (prompt: string) => {
     setIsLoadingResponse(true);
     setAiError(null);
@@ -570,11 +705,25 @@ export function App() {
     const trimmed = searchQuery.trim();
     if (trimmed) {
       fetchAiRecommendation(trimmed);
+      refreshProductSuggestions(trimmed);
     } else {
       setAiResponse(null);
       setAiError(null);
+      refreshProductSuggestions('');
     }
   };
+  const handleSaveSuggestion = useCallback((suggestion: ProductSuggestion) => {
+    setSavedSuggestions(prev => {
+      if (prev.some(item => item.id === suggestion.id)) {
+        return prev;
+      }
+      return [...prev, suggestion];
+    });
+  }, []);
+
+  const handleRemoveSaved = useCallback((id: string) => {
+    setSavedSuggestions(prev => prev.filter(item => item.id !== id));
+  }, []);
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -698,9 +847,11 @@ export function App() {
               <div className="flex items-center gap-3">
                 {tabs.map(tab => {
                 const Icon = tab.icon;
+                const showBadge = tab.id === 'saved' && savedSuggestions.length > 0;
                 return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all border ${activeTab === tab.id ? 'bg-cyan-500/10 text-cyan-200 border-cyan-500/40 shadow-lg shadow-cyan-500/10' : 'text-slate-400 border-transparent hover:border-slate-700 hover:bg-slate-900/60'}`}>
                       <Icon className="w-4 h-4" />
                       <span className="text-sm font-medium">{tab.label}</span>
+                      {showBadge && <span className="ml-1 inline-flex items-center justify-center min-w-[24px] px-1 text-[0.65rem] font-semibold rounded-full bg-cyan-500/20 text-cyan-100 border border-cyan-500/40">{savedSuggestions.length}</span>}
                     </button>;
               })}
                 <button type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="ml-1 inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-700 text-slate-200 hover:text-cyan-300 transition-colors">
@@ -745,6 +896,8 @@ export function App() {
                   {['Minimalist basics', 'Vintage denim', 'Office casual', 'Boho chic'].map(tag => <button key={tag} onClick={() => {
                   setSearchQuery(tag);
                   runSearch(tag);
+                  fetchAiRecommendation(tag);
+                  refreshProductSuggestions(tag);
                 }} className="px-4 py-2 bg-slate-950/50 border border-slate-800 rounded-full text-sm text-slate-300 hover:border-cyan-400 hover:text-cyan-200 transition-colors">
                       {tag}
                     </button>)}
@@ -793,10 +946,47 @@ export function App() {
                           })}
                         </div>}
                       {!aiResponse && !aiError && !isLoadingResponse && <p className="text-sm text-slate-400">
-                          Enter a clothing prompt above to receive a personalized outfit brief.
-                        </p>}
-                    </div>
+                        Enter a clothing prompt above to receive a personalized outfit brief.
+                      </p>}
                   </div>
+                </div>
+                  {productSuggestions.length > 0 && <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-cyan-500/10">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">MCP Shopping Agent</p>
+                          <h4 className="text-xl font-semibold text-white mt-1">Live trend-matched buys</h4>
+                          <p className="text-sm text-slate-400">Pulling working links based on your prompt plus today’s scraped trend signals.</p>
+                        </div>
+                        <div className="text-xs text-slate-500 text-right">
+                          <p>Feeds: vogue • whowhatwear • gq</p>
+                          <p className="text-[0.7rem]">via jina.ai MCP proxy</p>
+                        </div>
+                      </div>
+                      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                        {productSuggestions.map(suggestion => {
+                        const saved = savedSuggestions.some(item => item.id === suggestion.id);
+                        return <div key={suggestion.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-3 shadow-lg shadow-cyan-500/5">
+                              <div className="flex items-start gap-2">
+                                <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-100">
+                                  <Link2Icon className="w-4 h-4" />
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/80">{suggestion.vibe}</p>
+                                  <h5 className="text-lg font-semibold text-white leading-snug">{suggestion.title}</h5>
+                                  <p className="text-xs text-slate-400">{suggestion.retailer}</p>
+                                </div>
+                              </div>
+                              <p className="text-sm text-slate-300 flex-1">{suggestion.reason}</p>
+                              <div className="flex items-center justify-between gap-2">
+                                <a href={suggestion.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 hover:text-cyan-100">Shop link ↗</a>
+                                <button type="button" onClick={() => saved ? handleRemoveSaved(suggestion.id) : handleSaveSuggestion(suggestion)} className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg border ${saved ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-slate-700 text-slate-200 hover:border-cyan-400 hover:text-cyan-100'}`}>
+                                  {saved ? <><BookmarkCheckIcon className="w-3 h-3" /> Saved</> : <><BookmarkPlusIcon className="w-3 h-3" /> Save</>}
+                                </button>
+                              </div>
+                        </div>;
+                      })}
+                      </div>
+                    </div>}
                   {searchResults.length === 0 ? <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-300">
                       <p className="font-medium text-lg">
                         We couldn’t find a perfect match.
@@ -829,6 +1019,51 @@ export function App() {
                     </div>}
                 </div>}
             </div>
+          </div>}
+        {activeTab === 'saved' && <div className="max-w-5xl mx-auto space-y-8">
+            <div className="bg-slate-950/60 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-cyan-500/10">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">Saved links</p>
+                  <h2 className="text-3xl font-light text-white">Your StyleX shopping board</h2>
+                  <p className="text-slate-300">We stash the MCP agent’s live links here so you can revisit or clean them up.</p>
+                </div>
+                <button onClick={() => setActiveTab('discover')} className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-cyan-400 hover:text-cyan-100">
+                  <SearchIcon className="w-4 h-4" />
+                  New prompt
+                </button>
+              </div>
+            </div>
+            {savedSuggestions.length === 0 ? <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-300 shadow-lg shadow-cyan-500/5">
+                <p className="text-lg font-semibold text-white">No saved items yet</p>
+                <p className="text-sm text-slate-400 mt-2">Run a discovery prompt and hit “Save” on a link to pin it here.</p>
+                <button onClick={() => setActiveTab('discover')} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-100 font-semibold border border-cyan-500/40 hover:bg-cyan-500/30">
+                  Jump to Discover
+                </button>
+              </div> : <div className="grid gap-4 sm:grid-cols-2">
+                {savedSuggestions.map(item => <div key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 flex flex-col gap-3 shadow-lg shadow-blue-900/20">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-100">
+                        <BookmarkCheckIcon className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/80">{item.vibe}</p>
+                        <h4 className="text-lg font-semibold text-white leading-snug">{item.title}</h4>
+                        <p className="text-xs text-slate-400">{item.retailer}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-300 flex-1">{item.reason}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <a href={item.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 hover:text-cyan-100">
+                        <Link2Icon className="w-4 h-4" />
+                        Shop link
+                      </a>
+                      <button type="button" onClick={() => handleRemoveSaved(item.id)} className="text-xs px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-rose-400 hover:text-rose-200">
+                        Remove
+                      </button>
+                    </div>
+                  </div>)}
+              </div>}
           </div>}
         {activeTab === 'trending' && <div className="max-w-6xl mx-auto space-y-8">
             <div className="bg-slate-950/60 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-cyan-500/10">
