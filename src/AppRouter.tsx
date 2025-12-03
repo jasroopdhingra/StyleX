@@ -19,7 +19,10 @@ class RootErrorBoundary extends React.Component<React.PropsWithChildren> {
         <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 text-center">
           <div className="max-w-lg space-y-3">
             <p className="text-2xl font-semibold">Something went wrong.</p>
-            <p className="text-slate-300">Refresh the page to try again. If the issue continues, restart with <code>npm run dev</code> and <code>npm run server</code>.</p>
+            <p className="text-slate-300">
+              Refresh the page to try again. If the issue continues, restart with
+              <code> npm run dev </code> and <code> npm run server</code>.
+            </p>
           </div>
         </div>
       );
