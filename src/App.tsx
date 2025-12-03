@@ -246,7 +246,11 @@ const PRODUCT_LIBRARY: ProductSuggestion[] = [{
   vibe: 'Balletcore'
 }];
 
-const stripHtml = (value: string) => value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&amp;|&#39;|&quot;/g, ' ').replace(/\s+/g, ' ').trim();
+const stripHtml = (value: string) => value
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/&nbsp;|&amp;|&#39;|&quot;/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
 const normalizeAiResponse = (value: string) => {
   const lines = value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -254,13 +258,13 @@ const normalizeAiResponse = (value: string) => {
     return [];
   }
   return lines.map(line => {
-    const withoutBullet = line.replace(/^[-•\d\.\)\s]+/, '');
+    const withoutBullet = line.replace(/^[-•\d.)\s]+/, '');
     if (/^style brief[:]?/i.test(withoutBullet)) {
       const cleaned = withoutBullet.replace(/^style brief[:]?\s*/i, '');
       return `Style Brief: ${cleaned}`;
     }
-    if (/^look\s*\d[:\-]?/i.test(withoutBullet)) {
-      const cleaned = withoutBullet.replace(/^look\s*\d[:\-]?\s*/i, '');
+    if (/^look\s*\d[:-]?/i.test(withoutBullet)) {
+      const cleaned = withoutBullet.replace(/^look\s*\d[:-]?\s*/i, '');
       return `Look: ${cleaned}`;
     }
     return withoutBullet;
@@ -502,7 +506,6 @@ export function App() {
     }
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
-    const track = stream.getVideoTracks()[0];
     const video = document.createElement('video');
     video.srcObject = stream;
     video.playsInline = true;

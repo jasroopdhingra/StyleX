@@ -1,3 +1,4 @@
+/* eslint-env node */
 import { createServer } from 'node:http';
 
 const buildPrompt = (userPrompt) => [
