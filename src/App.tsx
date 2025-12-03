@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SearchIcon, SparklesIcon, HomeIcon, HeartIcon, FolderIcon, UserIcon, TrendingUpIcon, ImageIcon, UploadIcon, WandIcon, SunIcon, MoonIcon } from 'lucide-react';
 
 type StyleRecommendation = {
@@ -35,32 +35,32 @@ type TrendSourceStatus = {
 
 const styleRecommendations: StyleRecommendation[] = [{
   id: 1,
-  title: 'Coastal Layers',
-  vibe: 'Coastal grandma, relaxed chic',
-  description: 'Airy linens, muted blues and creamy knits for breezy evenings by the water.',
-  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600',
-  tags: ['coastal', 'grandma', 'linen', 'relaxed']
+  title: 'Tenniscore Summer',
+  vibe: 'Country club meets streetwear',
+  description: 'Pleated skorts, retro polos and visor shades styled with chunky sneakers and tube socks.',
+  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&sat=-20',
+  tags: ['tenniscore', 'sporty', 'summer', 'retro']
 }, {
   id: 2,
-  title: 'Minimalist Capsule',
-  vibe: 'Tailored, modern, monochrome',
-  description: 'Structured tailoring paired with premium basics in charcoal and ivory.',
-  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600',
-  tags: ['minimalist', 'office', 'capsule', 'modern']
+  title: 'Mob Wife Luxe',
+  vibe: 'Glamorous, bold, maximal',
+  description: 'Leopard coats, glossy leather and oversized gold hoops paired with sleek hair and eyeliner.',
+  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&hue=-10',
+  tags: ['maximal', 'evening', 'leopard', 'glam']
 }, {
   id: 3,
-  title: 'Boho Market Day',
-  vibe: 'Free-spirited layers',
-  description: 'Printed maxi dress, woven tote and artisan jewelry for an effortless weekend.',
-  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600&sat=-50',
-  tags: ['boho', 'market', 'weekend', 'prints']
+  title: 'Techno Utility',
+  vibe: 'Techwear, modular, grayscale',
+  description: 'Strapped cargos, waterproof shells and mesh layers with silver accents and lug soles.',
+  image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600',
+  tags: ['techwear', 'utility', 'city', 'mesh']
 }, {
   id: 4,
-  title: 'Streetwear Edge',
-  vibe: 'Sporty, bold, graphic',
-  description: 'Statement bomber, relaxed denim and chunky sneakers for city energy.',
-  image: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=600&hue=10',
-  tags: ['urban', 'street', 'bold', 'denim']
+  title: 'Quiet Luxury 2.0',
+  vibe: 'Polished minimal tailoring',
+  description: 'Double-pleated trousers, soft-shoulder blazers and butter leather totes in oat and chocolate.',
+  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&sat=-40',
+  tags: ['tailored', 'capsule', 'quiet luxury', 'neutral']
 }];
 
 const TREND_SOURCES = [{
@@ -78,100 +78,119 @@ const TREND_SOURCES = [{
 }];
 
 const FALLBACK_TRENDS: TrendCluster[] = [{
-  id: 'calm-coastal',
-  title: 'Sunlit Coastal Ease',
-  summary: 'Soft tailoring, raffia textures, and watery blues deliver the runaway “quiet vacation” brief. Layer breezy knits over swimwear and anchor with artisan accessories.',
+  id: 'quiet-luxury',
+  title: 'Quiet Luxury 2.0',
+  summary: 'Refined tailoring, buttery leather, and tonal layers that feel stealth-wealth but 2024-current.',
   examples: [{
-    title: 'Ivory crochet set with cloud-blue poplin shirt',
-    source: 'In-house Trend Desk',
-    excerpt: 'Blend loose crochet with structured shirting and metallic slides for a jet-set breakfast look.',
-    link: 'https://stylex.ai/trends/coastal-ease'
+    title: 'Oatmeal soft-shoulder blazer with pleated trousers',
+    source: 'StyleX Archive',
+    excerpt: 'Finish with a sleek belt, almond pumps, and a structured chocolate tote.',
+    link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
-    title: 'Sandy linen maxi and raffia fisherman sandals',
-    source: 'In-house Trend Desk',
-    excerpt: 'Elevate the neutral column dress with leather cuffs and a split-hem linen blazer.',
-    link: 'https://stylex.ai/trends/coastal-ease'
+    title: 'Ivory knitted vest over crisp blue poplin shirt',
+    source: 'StyleX Archive',
+    excerpt: 'Add slim gold hoops and slingback flats for boardroom-to-bar polish.',
+    link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
-    title: 'Oversized butter yellow cardigan with silk shorts',
-    source: 'In-house Trend Desk',
-    excerpt: 'Let a fluid camisole and delicate gold chains keep the palette light and luminous.',
-    link: 'https://stylex.ai/trends/coastal-ease'
+    title: 'Camel trench with butter leather mini bag',
+    source: 'StyleX Archive',
+    excerpt: 'Layer over puddle trousers and tonal mules for a stealthy commute look.',
+    link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
-    title: 'Aqua slip dress with netted tote and pearls',
-    source: 'In-house Trend Desk',
-    excerpt: 'Finish with shell-inspired earrings and slicked-back hair for seaside dinners.',
-    link: 'https://stylex.ai/trends/coastal-ease'
+    title: 'Chocolate column dress with sculptural cuffs',
+    source: 'StyleX Archive',
+    excerpt: 'Elevate with silk scarf hair tie and point-toe flats.',
+    link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
-    title: 'Striped rugby knit over white denim shorts',
-    source: 'In-house Trend Desk',
-    excerpt: 'Pop on a silk scarf and fisherman cap to nail nostalgic yacht club energy.',
-    link: 'https://stylex.ai/trends/coastal-ease'
+    title: 'Stone double-breasted suit with mesh top',
+    source: 'StyleX Archive',
+    excerpt: 'Keep the palette quiet but add chrome earrings for 2024 edge.',
+    link: 'https://stylex.ai/trends/quiet-luxury'
   }]
 }, {
-  id: 'utility-glam',
-  title: 'Utility Sport Luxe',
-  summary: 'Cargo tailoring, silver hardware, and mesh inserts transform practical staples into statement outfits fit for the city commute and gallery hop.',
+  id: 'tenniscore',
+  title: 'Tenniscore Redux',
+  summary: 'Preppy sport codes reimagined with cropped silhouettes, retro stripes, and off-court tailoring.',
   examples: [{
-    title: 'Charcoal parachute pants with sculpted corset tank',
-    source: 'In-house Trend Desk',
-    excerpt: 'Add mirrored sunnies and sleek trainers to keep proportions sharp.',
-    link: 'https://stylex.ai/trends/utility-luxe'
+    title: 'White pleated skort with varsity cardigan',
+    source: 'StyleX Archive',
+    excerpt: 'Pair with leather trainers, tube socks, and a mini duffle bag.',
+    link: 'https://stylex.ai/trends/tenniscore'
   }, {
-    title: 'Olive nylon blazer over racer bodysuit',
-    source: 'In-house Trend Desk',
-    excerpt: 'Layer on a webbed belt and sling bag for a polished utilitarian finish.',
-    link: 'https://stylex.ai/trends/utility-luxe'
+    title: 'Ribbed polo mini dress with visor',
+    source: 'StyleX Archive',
+    excerpt: 'Add silver jewelry and a nylon belt bag for festival-ready energy.',
+    link: 'https://stylex.ai/trends/tenniscore'
   }, {
-    title: 'Sculpted denim midi skirt with moto boots',
-    source: 'In-house Trend Desk',
-    excerpt: 'Balance with a mesh mock neck and boxy bomber for off-duty editors.',
-    link: 'https://stylex.ai/trends/utility-luxe'
+    title: 'Striped rugby knit over satin slip',
+    source: 'StyleX Archive',
+    excerpt: 'Ground with chunky loafers and ankle socks to keep it playful.',
+    link: 'https://stylex.ai/trends/tenniscore'
   }, {
-    title: 'Silver windbreaker with pleated tennis skirt',
-    source: 'In-house Trend Desk',
-    excerpt: 'Ground the metallic sheen with retro tube socks and chalky sneakers.',
-    link: 'https://stylex.ai/trends/utility-luxe'
+    title: 'Boxy blazer layered on a court dress',
+    source: 'StyleX Archive',
+    excerpt: 'Balance sport and polish with a woven tote and cat-eye sunnies.',
+    link: 'https://stylex.ai/trends/tenniscore'
   }, {
-    title: 'Cropped cargo vest over satin slip',
-    source: 'In-house Trend Desk',
-    excerpt: 'Finish the high-low mix with rope sandals and sculptural cuffs.',
-    link: 'https://stylex.ai/trends/utility-luxe'
+    title: 'Mesh long-sleeve under pleated mini',
+    source: 'StyleX Archive',
+    excerpt: 'Finish with platform Mary Janes and striped wristbands.',
+    link: 'https://stylex.ai/trends/tenniscore'
   }]
 }, {
-  id: 'club-neo',
-  title: 'After-Dark Neo Glam',
-  summary: 'Liquid shine, dramatic draping, and futuristic accessories dominate party dressing as seen across runways and IG moodboards.',
+  id: 'cyber-utility',
+  title: 'Cyber Utility Street',
+  summary: 'Future-facing cargos, metallic hardware, and mesh layers straight from Berlin clubs and Seoul streets.',
   examples: [{
-    title: 'Graphite sequin column dress with sporty bomber',
-    source: 'In-house Trend Desk',
-    excerpt: 'Contrast sparkle with matte nylon layers and sculptural hoops.',
-    link: 'https://stylex.ai/trends/neo-glam'
+    title: 'Graphite cargo pants with harness tank',
+    source: 'StyleX Archive',
+    excerpt: 'Stack on reflective sunnies and a crossbody holster bag.',
+    link: 'https://stylex.ai/trends/cyber-utility'
   }, {
-    title: 'Ruby mesh top with leather midi and slingbacks',
-    source: 'In-house Trend Desk',
-    excerpt: 'Stack anklets and micro bags for saturated cocktail energy.',
-    link: 'https://stylex.ai/trends/neo-glam'
+    title: 'Silver windbreaker over mesh mock neck',
+    source: 'StyleX Archive',
+    excerpt: 'Ground with trail sneakers and neon socks for a rave-ready stance.',
+    link: 'https://stylex.ai/trends/cyber-utility'
   }, {
-    title: 'Liquid metal mini with moto gloves',
-    source: 'In-house Trend Desk',
-    excerpt: 'Pair with chrome eye shadow and razor-sharp bob for Y2K futurism.',
-    link: 'https://stylex.ai/trends/neo-glam'
+    title: 'Black denim midi skirt with moto boots',
+    source: 'StyleX Archive',
+    excerpt: 'Add chain belt and fingerless gloves for gritty drama.',
+    link: 'https://stylex.ai/trends/cyber-utility'
   }, {
-    title: 'Black sheer set layered over bike shorts',
-    source: 'In-house Trend Desk',
-    excerpt: 'Temper the transparency with heavy chain belts and kitten heels.',
-    link: 'https://stylex.ai/trends/neo-glam'
+    title: 'Charcoal utility vest over satin slip',
+    source: 'StyleX Archive',
+    excerpt: 'Contrast tactile fabrics and finish with chrome hoops.',
+    link: 'https://stylex.ai/trends/cyber-utility'
   }, {
-    title: 'Draped satin blouse with puddle pants',
-    source: 'In-house Trend Desk',
-    excerpt: 'Cinch with a jeweled waist belt and metallic clutch.',
-    link: 'https://stylex.ai/trends/neo-glam'
+    title: 'Mesh-paneled bomber with puddle trousers',
+    source: 'StyleX Archive',
+    excerpt: 'Keep the palette grayscale and add reflective sneakers.',
+    link: 'https://stylex.ai/trends/cyber-utility'
   }]
 }];
 
 const STOP_WORDS = new Set(['with', 'from', 'that', 'this', 'your', 'into', 'their', 'about', 'after', 'these', 'those', 'while', 'where', 'which', 'style', 'trend', 'looks', 'fashion', 'season']);
 
 const stripHtml = (value: string) => value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&amp;|&#39;|&quot;/g, ' ').replace(/\s+/g, ' ').trim();
+
+const normalizeAiResponse = (value: string) => {
+  const lines = value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (!lines.length) {
+    return [];
+  }
+  return lines.map(line => {
+    const withoutBullet = line.replace(/^[-•\d\.\)\s]+/, '');
+    if (/^style brief[:]?/i.test(withoutBullet)) {
+      const cleaned = withoutBullet.replace(/^style brief[:]?\s*/i, '');
+      return `Style Brief: ${cleaned}`;
+    }
+    if (/^look\s*\d[:\-]?/i.test(withoutBullet)) {
+      const cleaned = withoutBullet.replace(/^look\s*\d[:\-]?\s*/i, '');
+      return `Look: ${cleaned}`;
+    }
+    return withoutBullet;
+  });
+};
 
 type Theme = 'dark' | 'light';
 const THEME_STORAGE_KEY = 'stylex-theme';
@@ -310,6 +329,7 @@ export function App() {
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const formattedAiLines = useMemo(() => aiResponse ? normalizeAiResponse(aiResponse) : [], [aiResponse]);
   const [trendingClusters, setTrendingClusters] = useState<TrendCluster[]>(FALLBACK_TRENDS);
   const [isLoadingTrends, setIsLoadingTrends] = useState(false);
   const [trendError, setTrendError] = useState<string | null>(null);
@@ -480,20 +500,20 @@ export function App() {
   }];
   const mockOutfits = [{
     id: 1,
-    name: 'Coastal Grandma Set',
-    image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400'
+    name: 'Courtside Tenniscore',
+    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&sat=-30'
   }, {
     id: 2,
-    name: 'Minimalist Chic',
-    image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400'
+    name: 'Mob Wife Evening',
+    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400'
   }, {
     id: 3,
-    name: 'Boho Vibes',
-    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400'
+    name: 'Cyber Utility Night',
+    image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400'
   }, {
     id: 4,
-    name: 'Urban Street Style',
-    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400'
+    name: 'Quiet Luxury Capsule',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&sat=-20'
   }];
   const runSearch = (queryText: string) => {
     const query = queryText.trim().toLowerCase();
@@ -750,9 +770,28 @@ export function App() {
                     </div>
                     <div className="mt-4 text-slate-200 space-y-2">
                       {aiError && <p className="text-sm text-rose-300">{aiError}</p>}
-                      {aiResponse && aiResponse.split('\n').map((line, index) => <p key={index} className="text-sm leading-relaxed text-slate-200">
-                            {line}
-                          </p>)}
+                      {formattedAiLines.length > 0 && <div className="space-y-2">
+                          {formattedAiLines.map((line, index) => {
+                            const isBrief = line.toLowerCase().startsWith('style brief');
+                            const isLook = line.toLowerCase().startsWith('look:');
+                            if (isLook) {
+                              return <div key={index} className="flex items-start gap-3">
+                                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                                  <p className="text-sm leading-relaxed text-slate-100">
+                                    {line.replace(/^look:\s*/i, '')}
+                                  </p>
+                                </div>;
+                            }
+                            if (isBrief) {
+                              return <p key={index} className="text-sm font-semibold text-cyan-100">
+                                  {line.replace(/^style brief:\s*/i, 'Style Brief: ')}
+                                </p>;
+                            }
+                            return <p key={index} className="text-sm leading-relaxed text-slate-200">
+                                {line}
+                              </p>;
+                          })}
+                        </div>}
                       {!aiResponse && !aiError && !isLoadingResponse && <p className="text-sm text-slate-400">
                           Enter a clothing prompt above to receive a personalized outfit brief.
                         </p>}

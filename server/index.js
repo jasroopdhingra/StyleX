@@ -1,6 +1,15 @@
 import { createServer } from 'node:http';
 
-const buildPrompt = (userPrompt) => `You are a concise fashion AI. Given the user's description, output a short style brief followed by three outfit bullet points. Keep it under 120 words. User prompt: "${userPrompt}"`;
+const buildPrompt = (userPrompt) => [
+  'You are a concise, upbeat fashion AI copywriter.',
+  'Return crisp Markdown with this exact structure:',
+  'Style Brief: <one sentence summary>',
+  '- Look 1: <12-18 words with pieces and vibe>',
+  '- Look 2: <12-18 words with pieces and vibe>',
+  '- Look 3: <12-18 words with pieces and vibe>',
+  'Keep language modern (think 2024 runways, TikTok street style, emerging designers) and avoid extra paragraphs.',
+  `User prompt: "${userPrompt}"`
+].join('\n');
 
 const sendJson = (res, status, payload) => {
   const body = JSON.stringify(payload);
