@@ -1,226 +1,79 @@
-/* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED */
+/* Tailwind layers */
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-/* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 :root {
   color-scheme: dark;
-  --loomi-lavender: #c7b8ff;
-  --loomi-charcoal: #1a1a1d;
-  --cloud-white: #fafafa;
-  --blush-neutral: #eadfe9;
-  --loomi-glow: #9f7bff;
-}
-
-:root[data-theme='light'] {
-  color-scheme: light;
 }
 
 body {
-  background: radial-gradient(circle at 18% 22%, rgba(199, 184, 255, 0.14), transparent 28%),
-    radial-gradient(circle at 82% 6%, rgba(159, 123, 255, 0.18), transparent 26%),
-    linear-gradient(140deg, #0f0f11 0%, #1a1a1d 40%, #100f14 100%);
-  color: #f2ecff;
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.18), transparent 32%),
+    linear-gradient(120deg, #0f172a 0%, #0b1020 40%, #0f172a 100%);
+  color: #e2e8f0;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: background 0.6s ease, color 0.3s ease;
   background-attachment: fixed;
+  overflow-x: hidden;
 }
 
-:root[data-theme='light'] body {
-  background: radial-gradient(circle at 12% 18%, rgba(199, 184, 255, 0.18), transparent 22%),
-    radial-gradient(circle at 92% 14%, rgba(234, 223, 233, 0.35), transparent 24%),
-    linear-gradient(135deg, #fafafa 0%, #f5f1fb 42%, #eadfe9 100%);
-  color: #1a1a1d;
+* {
+  box-sizing: border-box;
 }
 
-:root[data-theme='light'] .text-white,
-:root[data-theme='light'] .text-slate-100,
-:root[data-theme='light'] .text-slate-200 {
-  color: #1a1a1d !important;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-:root[data-theme='light'] .text-slate-300 {
-  color: #3b3348 !important;
+a:hover {
+  text-decoration: none;
 }
 
-:root[data-theme='light'] .text-slate-400 {
-  color: #52485f !important;
-}
-
-:root[data-theme='light'] .text-slate-500 {
-  color: #6b6177 !important;
-}
-
-:root[data-theme='light'] .bg-slate-950\/80,
-:root[data-theme='light'] .bg-slate-950\/70,
-:root[data-theme='light'] .bg-slate-950\/60,
-:root[data-theme='light'] .bg-slate-950\/50 {
-  background-color: rgba(250, 250, 250, 0.92) !important;
-}
-
-:root[data-theme='light'] .bg-slate-900 {
-  background-color: #f1ecfa !important;
-}
-
-:root[data-theme='light'] .bg-slate-900\/80 {
-  background-color: rgba(241, 236, 250, 0.72) !important;
-}
-
-:root[data-theme='light'] .bg-slate-900\/70 {
-  background-color: rgba(241, 236, 250, 0.62) !important;
-}
-
-:root[data-theme='light'] .bg-slate-900\/60 {
-  background-color: rgba(241, 236, 250, 0.52) !important;
-}
-
-:root[data-theme='light'] .bg-slate-900\/40 {
-  background-color: rgba(241, 236, 250, 0.36) !important;
-}
-
-:root[data-theme='light'] .bg-slate-900\/80,
-:root[data-theme='light'] .bg-slate-900\/70,
-:root[data-theme='light'] .bg-slate-900\/60,
-:root[data-theme='light'] .bg-slate-900\/40 {
-  backdrop-filter: blur(6px);
-}
-
-:root[data-theme='light'] .bg-slate-800 {
-  background-color: #f1ecfa !important;
-}
-
-:root[data-theme='light'] .bg-slate-700 {
-  background-color: #eadfe9 !important;
-}
-
-:root[data-theme='light'] .border-slate-800 {
-  border-color: rgba(26, 26, 29, 0.08) !important;
-}
-
-:root[data-theme='light'] .border-slate-700 {
-  border-color: rgba(26, 26, 29, 0.14) !important;
-}
-
-:root[data-theme='light'] .text-slate-950 {
-  color: #1a1a1d !important;
-}
-
-:root[data-theme='light'] .placeholder-slate-500::placeholder {
-  color: #9b8ab0;
-}
-
-:root[data-theme='light'] .from-slate-950 {
-  --tw-gradient-from: #fafafa;
-  --tw-gradient-to: rgb(250 250 250 / 0);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-:root[data-theme='light'] .via-slate-900 {
-  --tw-gradient-stops: var(--tw-gradient-from), #eadfe9, var(--tw-gradient-to);
-}
-
-:root[data-theme='light'] .to-blue-950 {
-  --tw-gradient-to: #c7b8ff;
-}
-
-.aurora-ring {
-  position: absolute;
+.aurora-bg {
+  position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 30% 20%, rgba(199, 184, 255, 0.22), transparent 30%),
-    radial-gradient(circle at 78% 10%, rgba(159, 123, 255, 0.18), transparent 28%),
-    radial-gradient(circle at 12% 82%, rgba(234, 223, 233, 0.24), transparent 34%);
-  filter: blur(48px);
-  mix-blend-mode: screen;
-  animation: auroraDrift 16s ease-in-out infinite alternate;
+  background: radial-gradient(circle at 30% 20%, rgba(129, 140, 248, 0.35), transparent 32%),
+    radial-gradient(circle at 70% 0%, rgba(56, 189, 248, 0.3), transparent 30%),
+    radial-gradient(circle at 20% 80%, rgba(244, 114, 182, 0.25), transparent 36%);
+  filter: blur(60px);
+  opacity: 0.85;
+  animation: auroraDrift 18s ease-in-out infinite alternate;
 }
 
 .glass-panel {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 24px 60px rgba(8, 47, 73, 0.35);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background-color: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.45);
 }
 
 .gradient-border {
   position: relative;
-  isolation: isolate;
 }
 
 .gradient-border::before {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(120deg, rgba(159, 123, 255, 0.4), rgba(199, 184, 255, 0.42), rgba(234, 223, 233, 0.4));
+  border-radius: 24px;
+  background: linear-gradient(120deg, rgba(99, 102, 241, 0.6), rgba(236, 72, 153, 0.5), rgba(250, 204, 21, 0.45));
   opacity: 0.7;
+  filter: blur(10px);
   z-index: -1;
-  filter: blur(6px);
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradientFlow 12s ease infinite;
-}
-
-.soft-tilt {
-  transition: transform 220ms ease, box-shadow 240ms ease, border-color 200ms ease;
-}
-
-.soft-tilt:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 18px 50px rgba(159, 123, 255, 0.2);
-}
-
-.gradient-ripple {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(159, 123, 255, 0.45), rgba(199, 184, 255, 0.3), transparent 65%);
-  filter: blur(20px);
-  transform: scale(0.6);
-  animation: gradientRipple 2s ease-out forwards;
-}
-
-@keyframes gradientRipple {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
-  }
-
-  60% {
-    opacity: 0.5;
-  }
-
-  100% {
-    transform: scale(4.5);
-    opacity: 0;
-  }
-}
-
-@keyframes gradientFlow {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 @keyframes auroraDrift {
   0% {
-    transform: translate3d(-12px, 6px, 0) scale(1);
+    transform: translate3d(-10px, 0, 0) scale(1);
   }
-
   50% {
-    transform: translate3d(10px, -16px, 0) scale(1.05);
+    transform: translate3d(20px, 10px, 0) scale(1.05);
   }
-
   100% {
-    transform: translate3d(-4px, 12px, 0) scale(1.02);
+    transform: translate3d(-10px, 5px, 0) scale(1.02);
   }
 }
