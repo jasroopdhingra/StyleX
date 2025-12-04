@@ -121,18 +121,19 @@ export function App() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showcase, setShowcase] = useState<Product[]>([]);
+  const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
 
   const aiLines = useMemo(() => (aiCopy ? normalizeAiResponse(aiCopy) : []), [aiCopy]);
 
   useEffect(() => {
-    const query = prompt.trim();
+    const query = submittedPrompt?.trim() || '';
     if (!query) {
       setShowcase([]);
       return;
     }
 
     setShowcase(buildProductMatches(query));
-  }, [prompt]);
+  }, [submittedPrompt]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -145,6 +146,7 @@ export function App() {
 
     setIsLoading(true);
     setAiError(null);
+    setSubmittedPrompt(query);
 
     try {
       const response = await fetch('/api/generate-style', {
