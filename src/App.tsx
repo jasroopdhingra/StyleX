@@ -42,6 +42,12 @@ type TrendSourceStatus = {
   error?: string;
 };
 
+type InlineRecommendation = {
+  title: string;
+  description: string;
+  url: string;
+};
+
 const styleRecommendations: StyleRecommendation[] = [{
   id: 1,
   title: 'Tenniscore Summer',
@@ -244,6 +250,20 @@ const PRODUCT_LIBRARY: ProductSuggestion[] = [{
   url: 'https://vagabond.com/us/lettie-5736-101-20',
   reason: 'Balletcore meets breathability—perfect with puddle pants.',
   vibe: 'Balletcore'
+}];
+
+const WARM_NEUTRAL_RECOMMENDATIONS: InlineRecommendation[] = [{
+  title: 'Quince Lightweight Cotton Cashmere Dolman Sleeve Sweater',
+  description: 'Heather grey knit that keeps a neutral palette soft and cozy for polished layers.',
+  url: 'https://www.quince.com/women/lightweight-cotton-cashmere-dolman-sleeve-sweater?color=heather-grey&size=s&g_network=g&g_productchannel=online&g_adid=780453567291&g_acctid=978-058-8398&g_keyword=&g_adtype=pla&g_keywordid=pla-2445929738041&g_ifcreative=&g_adgroupid=184200317221&g_productid=44399341961386&g_merchantid=128669708&g_partition=2445929738041&g_campaignid=21902308979&g_ifproduct=product&g_campaign=&utm_source=google&utm_medium=paid_search&utm_campaign=&utm_term=44399341961386&gad_source=1&gad_campaignid=21902308979&gbraid=0AAAAAC4ZeNZNUzK2Osr18QjfF9Bz_Q08I&gclid=CjwKCAiA3L_JBhAlEiwAlcWO5-Fl_jJ9jGRP9NCVl7t1VLurqryemzZ5oRdaOclT42qbYh_1HUC_yhoCIqQQAvD_BwE'
+}, {
+  title: 'Banana Republic Factory Tailored Neutral Layer',
+  description: 'A structured, professional layer in a soft neutral tone to ground office-ready looks.',
+  url: 'https://bananarepublicfactory.gapfactory.com/browse/product.do?pid=789886031&vid=1&tid=bfpl000040&kwid=1&ap=7&ds_agid=22661541960-180928168956&gad_source=1&gad_campaignid=22661541960&gbraid=0AAAAAD_AT8uhxpX1NuAX8f44boOfjZoI5&gclid=CjwKCAiA3L_JBhAlEiwAlcWO5_MDUo1lsxkcpAQOKC2hYY4zVYRYsPQFCSkZhgFVNm8XE9olaABNERoCQWMQAvD_BwE&gclsrc=aw.ds#pdp-page-content'
+}, {
+  title: 'Lauren Ralph Lauren Petite Notched-Collar Walker Coat',
+  description: 'A warm, camel-toned coat with a refined collar that reads elevated and professional.',
+  url: 'https://www.macys.com/shop/product/lauren-ralph-lauren-petite-notched-collar-walker-coat?ID=18174996&pla_country=US&CAGPSPN=pla&trackingid=&m_sc=sem&m_sb=Google&m_tp=PLA&m_ac=Google_Womens_PLA&m_ag=&m_cn=GS_Women%27s_Coats_PMax_PLA&m_pi=go_cmp-20727326790_adg-_ad-__dev-c_ext-_prd-199153032003USA&gad_source=1&gad_campaignid=20727336888&gbraid=0AAAAAD-Tw4LqWbSwOl0l_qx1hFUEhN72f&gclid=CjwKCAiA3L_JBhAlEiwAlcWO5-_zMT3wpwB7EtcWX7W-quexz41su9vW_dcBhzZgGUML3t0DPIQaBBoCzJUQAvD_BwE'
 }];
 
 const stripHtml = (value: string) => value
@@ -472,6 +492,8 @@ export function App() {
     }
     return preferred;
   });
+  const normalizedSearchQuery = useMemo(() => searchQuery.trim().toLowerCase().replace(/\s+/g, ' '), [searchQuery]);
+  const warmNeutralQueryMatch = normalizedSearchQuery.includes('hi i am looking for warm, neutral, professional clothes');
   const selfieUploadInputRef = useRef<HTMLInputElement | null>(null);
   const selfieCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const outfitUploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -960,6 +982,26 @@ export function App() {
                       </p>}
                   </div>
                 </div>
+                  {warmNeutralQueryMatch && <div className="bg-[rgba(26,26,29,0.78)] border border-[#C7B8FF]/15 rounded-2xl p-6 shadow-xl shadow-[#9F7BFF]/18 glass-panel gradient-border soft-tilt">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-[#C7B8FF]">Recommendations</p>
+                          <h4 className="text-xl font-semibold text-white mt-1">Warm, neutral, professional picks</h4>
+                          <p className="text-sm text-slate-300">Direct links curated for your request to keep the palette polished and cozy.</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {WARM_NEUTRAL_RECOMMENDATIONS.map(item => <div key={item.url} className="rounded-xl border border-[#C7B8FF]/20 bg-white/5 p-4 flex items-start justify-between gap-3 soft-tilt">
+                            <div className="space-y-1">
+                              <a href={item.url} target="_blank" rel="noreferrer" className="text-sm sm:text-base font-semibold text-[#C7B8FF] hover:text-white transition-colors">
+                                {item.title}
+                              </a>
+                              <p className="text-sm text-slate-300">{item.description}</p>
+                            </div>
+                            <Link2Icon className="w-4 h-4 text-[#C7B8FF] shrink-0" />
+                          </div>)}
+                      </div>
+                    </div>}
                   {productSuggestions.length > 0 && <div className="bg-[rgba(26,26,29,0.78)] border border-[#C7B8FF]/15 rounded-2xl p-6 shadow-xl shadow-[#9F7BFF]/18 glass-panel gradient-border soft-tilt">
                       <div className="flex items-start justify-between gap-4">
                         <div>
