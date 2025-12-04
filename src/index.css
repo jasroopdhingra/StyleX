@@ -6,6 +6,11 @@
 
 :root {
   color-scheme: dark;
+  --loomi-lavender: #c7b8ff;
+  --loomi-charcoal: #1a1a1d;
+  --cloud-white: #fafafa;
+  --blush-neutral: #eadfe9;
+  --loomi-glow: #9f7bff;
 }
 
 :root[data-theme='light'] {
@@ -13,65 +18,65 @@
 }
 
 body {
-  background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.12), transparent 28%),
-    radial-gradient(circle at 80% 0%, rgba(76, 29, 149, 0.16), transparent 26%),
-    linear-gradient(140deg, #020617 0%, #0b172a 35%, #0f172a 70%, #0b1322 100%);
-  color: #e2e8f0;
+  background: radial-gradient(circle at 18% 22%, rgba(199, 184, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 82% 6%, rgba(159, 123, 255, 0.18), transparent 26%),
+    linear-gradient(140deg, #0f0f11 0%, #1a1a1d 40%, #100f14 100%);
+  color: #f2ecff;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   transition: background 0.6s ease, color 0.3s ease;
   background-attachment: fixed;
 }
 
 :root[data-theme='light'] body {
-  background: radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.14), transparent 24%),
-    radial-gradient(circle at 90% 14%, rgba(99, 102, 241, 0.14), transparent 22%),
-    linear-gradient(135deg, #f8fafc 0%, #eef2ff 40%, #e2f3ff 100%);
-  color: #0f172a;
+  background: radial-gradient(circle at 12% 18%, rgba(199, 184, 255, 0.18), transparent 22%),
+    radial-gradient(circle at 92% 14%, rgba(234, 223, 233, 0.35), transparent 24%),
+    linear-gradient(135deg, #fafafa 0%, #f5f1fb 42%, #eadfe9 100%);
+  color: #1a1a1d;
 }
 
 :root[data-theme='light'] .text-white,
 :root[data-theme='light'] .text-slate-100,
 :root[data-theme='light'] .text-slate-200 {
-  color: #0f172a !important;
+  color: #1a1a1d !important;
 }
 
 :root[data-theme='light'] .text-slate-300 {
-  color: #1e293b !important;
+  color: #3b3348 !important;
 }
 
 :root[data-theme='light'] .text-slate-400 {
-  color: #334155 !important;
+  color: #52485f !important;
 }
 
 :root[data-theme='light'] .text-slate-500 {
-  color: #475569 !important;
+  color: #6b6177 !important;
 }
 
 :root[data-theme='light'] .bg-slate-950\/80,
 :root[data-theme='light'] .bg-slate-950\/70,
 :root[data-theme='light'] .bg-slate-950\/60,
 :root[data-theme='light'] .bg-slate-950\/50 {
-  background-color: rgba(255, 255, 255, 0.94) !important;
+  background-color: rgba(250, 250, 250, 0.92) !important;
 }
 
 :root[data-theme='light'] .bg-slate-900 {
-  background-color: #e2e8f0 !important;
+  background-color: #f1ecfa !important;
 }
 
 :root[data-theme='light'] .bg-slate-900\/80 {
-  background-color: rgba(226, 232, 240, 0.65) !important;
+  background-color: rgba(241, 236, 250, 0.72) !important;
 }
 
 :root[data-theme='light'] .bg-slate-900\/70 {
-  background-color: rgba(226, 232, 240, 0.55) !important;
+  background-color: rgba(241, 236, 250, 0.62) !important;
 }
 
 :root[data-theme='light'] .bg-slate-900\/60 {
-  background-color: rgba(226, 232, 240, 0.45) !important;
+  background-color: rgba(241, 236, 250, 0.52) !important;
 }
 
 :root[data-theme='light'] .bg-slate-900\/40 {
-  background-color: rgba(226, 232, 240, 0.3) !important;
+  background-color: rgba(241, 236, 250, 0.36) !important;
 }
 
 :root[data-theme='light'] .bg-slate-900\/80,
@@ -82,50 +87,50 @@ body {
 }
 
 :root[data-theme='light'] .bg-slate-800 {
-  background-color: #e2e8f0 !important;
+  background-color: #f1ecfa !important;
 }
 
 :root[data-theme='light'] .bg-slate-700 {
-  background-color: #e2e8f0 !important;
+  background-color: #eadfe9 !important;
 }
 
 :root[data-theme='light'] .border-slate-800 {
-  border-color: rgba(15, 23, 42, 0.12) !important;
+  border-color: rgba(26, 26, 29, 0.08) !important;
 }
 
 :root[data-theme='light'] .border-slate-700 {
-  border-color: rgba(15, 23, 42, 0.18) !important;
+  border-color: rgba(26, 26, 29, 0.14) !important;
 }
 
 :root[data-theme='light'] .text-slate-950 {
-  color: #0f172a !important;
+  color: #1a1a1d !important;
 }
 
 :root[data-theme='light'] .placeholder-slate-500::placeholder {
-  color: #94a3b8;
+  color: #9b8ab0;
 }
 
 :root[data-theme='light'] .from-slate-950 {
-  --tw-gradient-from: #f1f5f9;
-  --tw-gradient-to: rgb(241 245 249 / 0);
+  --tw-gradient-from: #fafafa;
+  --tw-gradient-to: rgb(250 250 250 / 0);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
 :root[data-theme='light'] .via-slate-900 {
-  --tw-gradient-stops: var(--tw-gradient-from), #dbeafe, var(--tw-gradient-to);
+  --tw-gradient-stops: var(--tw-gradient-from), #eadfe9, var(--tw-gradient-to);
 }
 
 :root[data-theme='light'] .to-blue-950 {
-  --tw-gradient-to: #bfdbfe;
+  --tw-gradient-to: #c7b8ff;
 }
 
 .aurora-ring {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.16), transparent 30%),
-    radial-gradient(circle at 80% 10%, rgba(99, 102, 241, 0.14), transparent 28%),
-    radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.12), transparent 34%);
+  background: radial-gradient(circle at 30% 20%, rgba(199, 184, 255, 0.22), transparent 30%),
+    radial-gradient(circle at 78% 10%, rgba(159, 123, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 12% 82%, rgba(234, 223, 233, 0.24), transparent 34%);
   filter: blur(48px);
   mix-blend-mode: screen;
   animation: auroraDrift 16s ease-in-out infinite alternate;
@@ -147,7 +152,7 @@ body {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(120deg, rgba(14, 165, 233, 0.35), rgba(129, 140, 248, 0.35), rgba(52, 211, 153, 0.3));
+  background: linear-gradient(120deg, rgba(159, 123, 255, 0.4), rgba(199, 184, 255, 0.42), rgba(234, 223, 233, 0.4));
   opacity: 0.7;
   z-index: -1;
   filter: blur(6px);
@@ -164,13 +169,13 @@ body {
 
 .soft-tilt:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 18px 50px rgba(14, 165, 233, 0.18);
+  box-shadow: 0 18px 50px rgba(159, 123, 255, 0.2);
 }
 
 .gradient-ripple {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(34, 211, 238, 0.4), rgba(56, 189, 248, 0.25), transparent 65%);
+  background: radial-gradient(circle at center, rgba(159, 123, 255, 0.45), rgba(199, 184, 255, 0.3), transparent 65%);
   filter: blur(20px);
   transform: scale(0.6);
   animation: gradientRipple 2s ease-out forwards;
