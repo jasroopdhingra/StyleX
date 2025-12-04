@@ -95,6 +95,90 @@ const truncateDataUrl = (value, max = 1800) => {
   return value.length > max ? `${value.slice(0, max)}...` : value;
 };
 
+const buildDomainLabel = (urlString) => {
+  try {
+    const hostname = new URL(urlString).hostname.replace(/^www\./, '');
+    return hostname;
+  } catch (error) {
+    console.error('Unable to parse product URL', urlString, error);
+    return 'source';
+  }
+};
+
+const handleSearchProducts = async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
+  const apiKey = process.env.FIRECRAWL_API_KEY;
+  if (!apiKey) {
+    sendJson(res, 500, { error: 'FIRECRAWL_API_KEY is not configured on the server.' });
+    return;
+  }
+
+  try {
+    const body = await readBody(req);
+    const prompt = body?.prompt;
+
+    if (!prompt || typeof prompt !== 'string') {
+      sendJson(res, 400, { error: 'A prompt string is required.' });
+      return;
+    }
+
+    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        query: `${prompt} clothing site:com`,
+        pageOptions: { limit: 6 }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Firecrawl search failed', response.status, errorText);
+      sendJson(res, 502, { error: 'Product search returned an error.' });
+      return;
+    }
+
+    const data = await response.json();
+    const results = Array.isArray(data?.data)
+      ? data.data
+          .filter(item => item?.url)
+          .map(item => ({
+            url: item.url,
+            title: item.title || 'View product',
+            source: buildDomainLabel(item.url)
+          }))
+          .slice(0, 6)
+      : [];
+
+    if (results.length === 0) {
+      sendJson(res, 200, { results: [], source: 'firecrawl' });
+      return;
+    }
+
+    sendJson(res, 200, { results, source: 'firecrawl' });
+  } catch (error) {
+    console.error('Firecrawl search exception', error);
+    sendJson(res, 500, { error: 'Failed to search for products.' });
+  }
+};
+
 const handleVirtualTryOn = async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -160,6 +244,11 @@ const server = createServer((req, res) => {
 
   if (req.url === '/api/virtual-try-on') {
     handleVirtualTryOn(req, res);
+    return;
+  }
+
+  if (req.url === '/api/search-products') {
+    handleSearchProducts(req, res);
     return;
   }
 
