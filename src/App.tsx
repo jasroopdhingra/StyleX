@@ -147,6 +147,7 @@ export function App() {
   const [aiCopy, setAiCopy] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isShowcaseLoading, setIsShowcaseLoading] = useState(false);
   const [showcase, setShowcase] = useState<Product[]>([]);
   const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
 
@@ -156,10 +157,19 @@ export function App() {
     const query = submittedPrompt?.trim() || '';
     if (!query) {
       setShowcase([]);
+      setIsShowcaseLoading(false);
       return;
     }
 
-    setShowcase(buildProductMatches(query));
+    setIsShowcaseLoading(true);
+    const timeout = setTimeout(() => {
+      setShowcase(buildProductMatches(query));
+      setIsShowcaseLoading(false);
+    }, 10000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [submittedPrompt]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -174,6 +184,8 @@ export function App() {
     setIsLoading(true);
     setAiError(null);
     setSubmittedPrompt(query);
+    setIsShowcaseLoading(true);
+    setShowcase([]);
 
     try {
       const response = await fetch('/api/generate-style', {
@@ -296,7 +308,13 @@ export function App() {
               <span className="text-xs text-slate-400">Real, shoppable links</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              {showcase.length === 0 && (
+              {isShowcaseLoading && (
+                <div className="sm:col-span-2 flex items-center gap-2 text-slate-300 text-sm">
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                  Curating product links—check back in a few seconds.
+                </div>
+              )}
+              {!isShowcaseLoading && showcase.length === 0 && (
                 <p className="text-slate-300 sm:col-span-2 text-sm">Type a prompt above to unlock shoppable picks tuned to your vibe.</p>
               )}
               {showcase.map(product => (
