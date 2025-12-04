@@ -604,6 +604,10 @@ export function App() {
     loadTrends();
   }, [loadTrends]);
 
+  const refreshProductSuggestions = useCallback((query: string) => {
+    setProductSuggestions(buildProductSuggestions(query, trendingClusters));
+  }, [trendingClusters]);
+
   useEffect(() => {
     if (!hasSearched) return;
     refreshProductSuggestions(searchQuery.trim());
@@ -672,9 +676,6 @@ export function App() {
 
     setSearchResults(results);
   };
-  const refreshProductSuggestions = useCallback((query: string) => {
-    setProductSuggestions(buildProductSuggestions(query, trendingClusters));
-  }, [trendingClusters]);
   const fetchAiRecommendation = useCallback(async (prompt: string) => {
     setIsLoadingResponse(true);
     setAiError(null);
