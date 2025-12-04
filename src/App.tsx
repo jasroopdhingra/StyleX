@@ -92,27 +92,27 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
   summary: 'Refined tailoring, buttery leather, and tonal layers that feel stealth-wealth but 2024-current.',
   examples: [{
     title: 'Oatmeal soft-shoulder blazer with pleated trousers',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Finish with a sleek belt, almond pumps, and a structured chocolate tote.',
     link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
     title: 'Ivory knitted vest over crisp blue poplin shirt',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Add slim gold hoops and slingback flats for boardroom-to-bar polish.',
     link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
     title: 'Camel trench with butter leather mini bag',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Layer over puddle trousers and tonal mules for a stealthy commute look.',
     link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
     title: 'Chocolate column dress with sculptural cuffs',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Elevate with silk scarf hair tie and point-toe flats.',
     link: 'https://stylex.ai/trends/quiet-luxury'
   }, {
     title: 'Stone double-breasted suit with mesh top',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Keep the palette quiet but add chrome earrings for 2024 edge.',
     link: 'https://stylex.ai/trends/quiet-luxury'
   }]
@@ -122,27 +122,27 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
   summary: 'Preppy sport codes reimagined with cropped silhouettes, retro stripes, and off-court tailoring.',
   examples: [{
     title: 'White pleated skort with varsity cardigan',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Pair with leather trainers, tube socks, and a mini duffle bag.',
     link: 'https://stylex.ai/trends/tenniscore'
   }, {
     title: 'Ribbed polo mini dress with visor',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Add silver jewelry and a nylon belt bag for festival-ready energy.',
     link: 'https://stylex.ai/trends/tenniscore'
   }, {
     title: 'Striped rugby knit over satin slip',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Ground with chunky loafers and ankle socks to keep it playful.',
     link: 'https://stylex.ai/trends/tenniscore'
   }, {
     title: 'Boxy blazer layered on a court dress',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Balance sport and polish with a woven tote and cat-eye sunnies.',
     link: 'https://stylex.ai/trends/tenniscore'
   }, {
     title: 'Mesh long-sleeve under pleated mini',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Finish with platform Mary Janes and striped wristbands.',
     link: 'https://stylex.ai/trends/tenniscore'
   }]
@@ -152,27 +152,27 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
   summary: 'Future-facing cargos, metallic hardware, and mesh layers straight from Berlin clubs and Seoul streets.',
   examples: [{
     title: 'Graphite cargo pants with harness tank',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Stack on reflective sunnies and a crossbody holster bag.',
     link: 'https://stylex.ai/trends/cyber-utility'
   }, {
     title: 'Silver windbreaker over mesh mock neck',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Ground with trail sneakers and neon socks for a rave-ready stance.',
     link: 'https://stylex.ai/trends/cyber-utility'
   }, {
     title: 'Black denim midi skirt with moto boots',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Add chain belt and fingerless gloves for gritty drama.',
     link: 'https://stylex.ai/trends/cyber-utility'
   }, {
     title: 'Charcoal utility vest over satin slip',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Contrast tactile fabrics and finish with chrome hoops.',
     link: 'https://stylex.ai/trends/cyber-utility'
   }, {
     title: 'Mesh-paneled bomber with puddle trousers',
-    source: 'StyleX Archive',
+    source: 'Lumi Archive',
     excerpt: 'Keep the palette grayscale and add reflective sneakers.',
     link: 'https://stylex.ai/trends/cyber-utility'
   }]
@@ -579,7 +579,7 @@ export function App() {
         setTrendingClusters(buildClustersFromExamples(aggregated));
         setTrendLastUpdated(new Date());
         if (aggregated.length < 15) {
-          setTrendError('Supplemented live scrape with StyleX archive to complete three stories.');
+          setTrendError('Supplemented live scrape with Lumi archive to complete three stories.');
         }
       } else {
         setTrendingClusters(FALLBACK_TRENDS);
@@ -919,7 +919,7 @@ export function App() {
                   <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 shadow-lg shadow-cyan-500/10">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">StyleX AI Stylist</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">Lumi AI Stylist</p>
                         <h4 className="text-xl font-semibold text-white mt-1">Prompt response</h4>
                         <p className="text-sm text-slate-400">We send your vibe to our LLM for a fresh outfit briefing.</p>
                       </div>
@@ -1029,7 +1029,7 @@ export function App() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">Saved links</p>
-                  <h2 className="text-3xl font-light text-white">Your StyleX shopping board</h2>
+                  <h2 className="text-3xl font-light text-white">Your Lumi shopping board</h2>
                   <p className="text-slate-300">We stash the MCP agent’s live links here so you can revisit or clean them up.</p>
                 </div>
                 <button onClick={() => setActiveTab('discover')} className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-cyan-400 hover:text-cyan-100">
