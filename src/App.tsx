@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { SparklesIcon, ArrowRightIcon, Wand2Icon, Loader2Icon, Link2Icon, StarsIcon } from 'lucide-react';
 
 type Product = {
@@ -120,14 +120,23 @@ export function App() {
   const [aiCopy, setAiCopy] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showcase, setShowcase] = useState<Product[]>(productLibrary.slice(0, 3));
+  const [showcase, setShowcase] = useState<Product[]>([]);
 
   const aiLines = useMemo(() => (aiCopy ? normalizeAiResponse(aiCopy) : []), [aiCopy]);
+
+  useEffect(() => {
+    const query = prompt.trim();
+    if (!query) {
+      setShowcase([]);
+      return;
+    }
+
+    setShowcase(buildProductMatches(query));
+  }, [prompt]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const query = prompt.trim();
-    setShowcase(buildProductMatches(query));
     if (!query) {
       setAiCopy(null);
       setAiError('Describe how you want to dress and I will draft a mini brief.');
@@ -258,6 +267,9 @@ export function App() {
               <span className="text-xs text-slate-400">Real, shoppable links</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
+              {showcase.length === 0 && (
+                <p className="text-slate-300 sm:col-span-2 text-sm">Type a prompt above to unlock shoppable picks tuned to your vibe.</p>
+              )}
               {showcase.map(product => (
                 <a
                   key={product.id}
