@@ -13,6 +13,33 @@ type Product = {
 
 const productLibrary: Product[] = [
   {
+    id: 'linen-color-trouser',
+    title: 'Mineral check linen cotton trousers',
+    retailer: 'Toast',
+    url: 'https://us.toa.st/products/mineral-check-linen-cotton-trousers-brown-ochre-dark-cornflower?utm_source=google&utm_medium=cpc&utm_campaign=23081248688&gad_source=1&gad_campaignid=23081248688&gbraid=0AAAAAC_4dc4SCPg_xWF-wGBBnlVCXUHOF&gclid=CjwKCAiA3L_JBhAlEiwAlcWO5-55xyLUTC_lxYOixVl6GIFuLF0ShGc208jUY2pvXbL84mQTPgomUxoCh9kQAvD_BwE&gclsrc=aw.ds',
+    description: 'Relaxed linen-cotton checks that bring color while staying breathable.',
+    keywords: ['colorful', 'pants', 'comfy', 'linen', 'trouser'],
+    swatch: 'from-amber-200 to-blue-200'
+  },
+  {
+    id: 'velvet-flare',
+    title: 'Cali velvet flare pant',
+    retailer: 'Natural Life',
+    url: 'https://www.naturallife.com/products/cali-velvet-flare-pant-drawn-garden-wine?utm_source=google&utm_medium=cpc&utm_campaign=NLE_US_pMax_2503_Skirt_Pants&utm_id=CjwKCAiA3L_JBhAlEiwAlcWO58xQN9R6lK2BMbVFGOJpQc0QYHMc_69v_jfM6aNbG8OQJhSV0NtNfhoC2_kQAvD_BwE&utm_term=&utm_content=&gad_source=1&gad_campaignid=22337572528&gbraid=0AAAAADtW_OZf-hm_rNdIzyOSkdqiiyKII&gclid=CjwKCAiA3L_JBhAlEiwAlcWO58xQN9R6lK2BMbVFGOJpQc0QYHMc_69v_jfM6aNbG8OQJhSV0NtNfhoC2_kQAvD_BwE',
+    description: 'Playful velvet flares with floral color that still feel loungey.',
+    keywords: ['colorful', 'pants', 'comfy', 'velvet', 'flare'],
+    swatch: 'from-rose-200 to-amber-300'
+  },
+  {
+    id: 'canvas-low-rise',
+    title: 'BDG Kayla cotton canvas low-rise pant',
+    retailer: 'Urban Outfitters',
+    url: 'https://www.urbanoutfitters.com/shop/hybrid/bdg-kayla-cotton-canvas-low-rise-pant?color=060&size=26&type=STANDARD&creative=&device=c&g_acctid=312-727-9506&g_adgroupid=&g_adid=&g_adtype=none&g_campaign=%5BNB+PLA+US%5D+-+PMAX+-+Womens+-+LIA&g_campaignid=20365074713&g_keyword=&g_keywordid=&g_network=x&g_type=shopping&matchtype=&network=x&utm_campaign=%5BNB+PLA+US%5D+-+PMAX+-+Womens+-+LIA&utm_content=&utm_kxconfid=vx6q4l3b6&utm_medium=cpc&utm_source=google&utm_term=&gad_source=1&gad_campaignid=20360233368&gbraid=0AAAAADpxK_82k9g9leoSl-Hq51wohVUuu&gclid=CjwKCAiA3L_JBhAlEiwAlcWO59UwdR2A-7GIryjZGq8WMQQaCj1MkXebopZcV8x0mgX4pC6xMgUpBRoCPkcQAvD_BwE&gclsrc=aw.ds',
+    description: 'Canvas pants with color blocking that stay soft enough for daily wear.',
+    keywords: ['colorful', 'pants', 'comfy', 'canvas', 'low-rise'],
+    swatch: 'from-sky-200 to-emerald-200'
+  },
+  {
     id: 'warm-blazer',
     title: 'Heathered knit blazer',
     retailer: 'Quince',
