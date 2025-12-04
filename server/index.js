@@ -169,5 +169,5 @@ const server = createServer((req, res) => {
 
 const port = process.env.PORT || 5174;
 server.listen(port, () => {
-  console.log(`StyleX AI backend listening on port ${port}`);
+  console.log(`Lumi AI backend listening on port ${port}`);
 });

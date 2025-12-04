@@ -94,27 +94,27 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
     title: 'Oatmeal soft-shoulder blazer with pleated trousers',
     source: 'Lumi Archive',
     excerpt: 'Finish with a sleek belt, almond pumps, and a structured chocolate tote.',
-    link: 'https://stylex.ai/trends/quiet-luxury'
+    link: 'https://lumi.ai/trends/quiet-luxury'
   }, {
     title: 'Ivory knitted vest over crisp blue poplin shirt',
     source: 'Lumi Archive',
     excerpt: 'Add slim gold hoops and slingback flats for boardroom-to-bar polish.',
-    link: 'https://stylex.ai/trends/quiet-luxury'
+    link: 'https://lumi.ai/trends/quiet-luxury'
   }, {
     title: 'Camel trench with butter leather mini bag',
     source: 'Lumi Archive',
     excerpt: 'Layer over puddle trousers and tonal mules for a stealthy commute look.',
-    link: 'https://stylex.ai/trends/quiet-luxury'
+    link: 'https://lumi.ai/trends/quiet-luxury'
   }, {
     title: 'Chocolate column dress with sculptural cuffs',
     source: 'Lumi Archive',
     excerpt: 'Elevate with silk scarf hair tie and point-toe flats.',
-    link: 'https://stylex.ai/trends/quiet-luxury'
+    link: 'https://lumi.ai/trends/quiet-luxury'
   }, {
     title: 'Stone double-breasted suit with mesh top',
     source: 'Lumi Archive',
     excerpt: 'Keep the palette quiet but add chrome earrings for 2024 edge.',
-    link: 'https://stylex.ai/trends/quiet-luxury'
+    link: 'https://lumi.ai/trends/quiet-luxury'
   }]
 }, {
   id: 'tenniscore',
@@ -124,27 +124,27 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
     title: 'White pleated skort with varsity cardigan',
     source: 'Lumi Archive',
     excerpt: 'Pair with leather trainers, tube socks, and a mini duffle bag.',
-    link: 'https://stylex.ai/trends/tenniscore'
+    link: 'https://lumi.ai/trends/tenniscore'
   }, {
     title: 'Ribbed polo mini dress with visor',
     source: 'Lumi Archive',
     excerpt: 'Add silver jewelry and a nylon belt bag for festival-ready energy.',
-    link: 'https://stylex.ai/trends/tenniscore'
+    link: 'https://lumi.ai/trends/tenniscore'
   }, {
     title: 'Striped rugby knit over satin slip',
     source: 'Lumi Archive',
     excerpt: 'Ground with chunky loafers and ankle socks to keep it playful.',
-    link: 'https://stylex.ai/trends/tenniscore'
+    link: 'https://lumi.ai/trends/tenniscore'
   }, {
     title: 'Boxy blazer layered on a court dress',
     source: 'Lumi Archive',
     excerpt: 'Balance sport and polish with a woven tote and cat-eye sunnies.',
-    link: 'https://stylex.ai/trends/tenniscore'
+    link: 'https://lumi.ai/trends/tenniscore'
   }, {
     title: 'Mesh long-sleeve under pleated mini',
     source: 'Lumi Archive',
     excerpt: 'Finish with platform Mary Janes and striped wristbands.',
-    link: 'https://stylex.ai/trends/tenniscore'
+    link: 'https://lumi.ai/trends/tenniscore'
   }]
 }, {
   id: 'cyber-utility',
@@ -154,32 +154,32 @@ const FALLBACK_TRENDS: TrendCluster[] = [{
     title: 'Graphite cargo pants with harness tank',
     source: 'Lumi Archive',
     excerpt: 'Stack on reflective sunnies and a crossbody holster bag.',
-    link: 'https://stylex.ai/trends/cyber-utility'
+    link: 'https://lumi.ai/trends/cyber-utility'
   }, {
     title: 'Silver windbreaker over mesh mock neck',
     source: 'Lumi Archive',
     excerpt: 'Ground with trail sneakers and neon socks for a rave-ready stance.',
-    link: 'https://stylex.ai/trends/cyber-utility'
+    link: 'https://lumi.ai/trends/cyber-utility'
   }, {
     title: 'Black denim midi skirt with moto boots',
     source: 'Lumi Archive',
     excerpt: 'Add chain belt and fingerless gloves for gritty drama.',
-    link: 'https://stylex.ai/trends/cyber-utility'
+    link: 'https://lumi.ai/trends/cyber-utility'
   }, {
     title: 'Charcoal utility vest over satin slip',
     source: 'Lumi Archive',
     excerpt: 'Contrast tactile fabrics and finish with chrome hoops.',
-    link: 'https://stylex.ai/trends/cyber-utility'
+    link: 'https://lumi.ai/trends/cyber-utility'
   }, {
     title: 'Mesh-paneled bomber with puddle trousers',
     source: 'Lumi Archive',
     excerpt: 'Keep the palette grayscale and add reflective sneakers.',
-    link: 'https://stylex.ai/trends/cyber-utility'
+    link: 'https://lumi.ai/trends/cyber-utility'
   }]
 }];
 
 const STOP_WORDS = new Set(['with', 'from', 'that', 'this', 'your', 'into', 'their', 'about', 'after', 'these', 'those', 'while', 'where', 'which', 'style', 'trend', 'looks', 'fashion', 'season']);
-const SAVED_SUGGESTIONS_KEY = 'stylex-saved-links';
+const SAVED_SUGGESTIONS_KEY = 'lumi-saved-links';
 
 const PRODUCT_LIBRARY: ProductSuggestion[] = [{
   id: 'tennis-skort',
@@ -272,7 +272,7 @@ const normalizeAiResponse = (value: string) => {
 };
 
 type Theme = 'dark' | 'light';
-const THEME_STORAGE_KEY = 'stylex-theme';
+const THEME_STORAGE_KEY = 'lumi-theme';
 const getPreferredTheme = (): Theme => {
   if (typeof window === 'undefined') {
     return 'dark';
