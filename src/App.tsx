@@ -234,10 +234,7 @@ export function App() {
                 ))}
               </div>
             </div>
-            <div className="w-full md:w-56 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur">
-              <p className="text-sm text-slate-200 mb-2">Design language</p>
-              <p className="text-lg font-medium">Soft gradients, glass panels, and motion cues keep things modern.</p>
-            </div>
+            
           </div>
         </header>
 
