@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SparklesIcon, ArrowRightIcon, Wand2Icon, Loader2Icon, Link2Icon, StarsIcon } from 'lucide-react';
+import { Loader2Icon, SparklesIcon } from 'lucide-react';
 
 type DraftLookResponse = {
   advice: string;
@@ -12,11 +12,10 @@ const fallbackLinks = [
   'https://www.aritzia.com/us/en/product/the-effortless-pant/98721.html'
 ];
 
-const samplePrompts = [
-  'Warm but professional',
-  'Soft minimal weekend',
-  'Sporty commute layers',
-  'Night-out with metallics'
+const quickIdeas = [
+  'Clean girl aesthetic for brunch',
+  'Coastal grandma vibes',
+  'Dark academia for fall'
 ];
 
 const normalizeAiResponse = (value: string) => value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -74,175 +73,129 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 relative overflow-hidden">
-      <div className="aurora-bg" aria-hidden />
-      <div className="relative max-w-6xl mx-auto px-6 py-14 space-y-12">
-        <header className="flex flex-col gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur text-xs uppercase tracking-[0.3em] text-slate-300">
-            <StarsIcon className="h-4 w-4" />
-            Lumi Style Studio
-          </div>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-3">
-              <h1 className="text-4xl md:text-5xl font-semibold leading-tight text-white">A calmer way to brief your next outfit</h1>
-              <p className="text-slate-300 max-w-2xl text-lg">
-                Type your vibe or occasion. Lumi drafts a mini styling direction and gives you shoppable picks with working links—no scrolling required.
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {samplePrompts.map(example => (
-                  <button
-                    key={example}
-                    className="px-3 py-1.5 text-sm rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition"
-                    onClick={() => setPrompt(example)}
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="w-full md:w-56 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur">
-              <p className="text-sm text-slate-200 mb-2">Design language</p>
-              <p className="text-lg font-medium">Soft gradients, glass panels, and motion cues keep things modern.</p>
-            </div>
-          </div>
-        </header>
+    <div className="min-h-screen bg-[#f6efe7] text-[#2c221b] flex flex-col items-center px-4 py-12">
+      <header className="flex flex-col items-center text-center gap-3 mb-10">
+        <div className="flex items-center gap-2 text-[#4fbda5]">
+          <SparklesIcon className="h-5 w-5" />
+          <span className="text-sm font-medium">Glow by Lumi</span>
+        </div>
+        <div className="text-5xl md:text-6xl font-serif tracking-tight text-[#2a2018]">Lumi</div>
+        <p className="max-w-3xl text-lg leading-relaxed text-[#4d4036]">
+          Your AI-powered personal fashion curator. Describe your style in natural language and discover perfectly curated outfits
+          that match your aesthetic.
+        </p>
+      </header>
 
-        <section className="glass-panel gradient-border rounded-3xl p-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_-10%,rgba(159,123,255,0.25),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.25),transparent_32%)]" aria-hidden />
-          <form onSubmit={handleSubmit} className="relative z-10 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-400 to-fuchsia-500 flex items-center justify-center text-white shadow-lg shadow-indigo-900/50">
-                <Wand2Icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-300">Style prompt</p>
-                <p className="text-lg text-slate-100">Tell Lumi how you want to feel</p>
-              </div>
-            </div>
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1 relative">
+      <main className="w-full max-w-4xl">
+        <section className="bg-white rounded-2xl shadow-lg border border-[#e5dacf] p-6 md:p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.2em] text-[#7c6c5e]">Describe your desired style</p>
+              <div className="relative">
                 <textarea
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
-                  placeholder="Warm but professional with a hint of ease"
-                  className="w-full h-28 rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400/70 backdrop-blur placeholder:text-slate-500 resize-none"
+                  placeholder="e.g., 'clean girl aesthetic' or 'coastal grandma vibes'"
+                  className="w-full h-40 rounded-xl border border-[#d9cfc3] bg-white px-4 py-3 text-lg text-[#2c221b] placeholder:text-[#9b8c7f] focus:outline-none focus:ring-2 focus:ring-[#c8b8a6] resize-none"
                 />
-                <span className="absolute right-4 bottom-3 text-xs text-slate-400">Free-type your vibe</span>
+                <div className="absolute bottom-4 right-4 flex items-center gap-2 text-[#c4b5a6]">
+                  <span className="h-8 w-8 rounded-full border border-[#d9cfc3] bg-[#f4ece3]" aria-hidden />
+                  <span className="h-8 w-8 rounded-full border border-[#d9cfc3] bg-[#f4ece3]" aria-hidden />
+                </div>
               </div>
-              <button
-                type="submit"
-                className="h-14 px-6 rounded-2xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-400 text-slate-950 font-semibold flex items-center gap-2 shadow-[0_20px_60px_rgba(109,40,217,0.35)] hover:scale-[1.01] transition"
-              >
-                {isLoading ? <Loader2Icon className="h-5 w-5 animate-spin" /> : <SparklesIcon className="h-5 w-5" />}
-                Draft My Look
-              </button>
             </div>
-            {aiError && <p className="text-sm text-amber-200">{aiError}</p>}
-          </form>
-        </section>
 
-        <section className="grid lg:grid-cols-2 gap-6">
-          <div className="glass-panel rounded-3xl p-6 border border-white/10">
-            <div className="flex items-center gap-2 mb-3">
-              <ArrowRightIcon className="h-5 w-5 text-indigo-200" />
-              <h2 className="text-xl font-semibold">Stylist brief</h2>
-            </div>
-            <div className="space-y-3 text-slate-200">
-              {isLoading && (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Loader2Icon className="h-4 w-4 animate-spin" />
-                  Generating softer direction...
-                </div>
-              )}
-              {!isLoading && aiLines.length === 0 && (
-                <p className="text-slate-400">You will see Lumi’s tone-on-tone styling notes here after you submit a prompt.</p>
-              )}
-              {aiLines.map((line, idx) => (
-                <div key={idx} className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  {line}
-                </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-[#5f5246]">Quick ideas:</span>
+              {quickIdeas.map(idea => (
+                <button
+                  key={idea}
+                  type="button"
+                  onClick={() => setPrompt(idea)}
+                  className="px-4 py-2 rounded-full bg-[#f1e7dc] text-[#3e3127] text-sm font-medium border border-[#e0d2c3] hover:bg-[#e9dece] transition"
+                >
+                  {idea}
+                </button>
               ))}
             </div>
-          </div>
 
-          <div className="glass-panel rounded-3xl p-6 border border-white/10 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Link2Icon className="h-5 w-5 text-emerald-200" />
-                <h2 className="text-xl font-semibold">Shop the signal</h2>
+            {aiError && <p className="text-sm text-[#9b4c2c]">{aiError}</p>}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-4 rounded-xl bg-[#8a7f73] text-white text-lg font-semibold shadow-md hover:bg-[#7b6f63] disabled:opacity-70 disabled:cursor-not-allowed transition"
+            >
+              {isLoading ? 'Curating…' : '✨ Curate My Outfit'}
+            </button>
+          </form>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold text-[#3a2f25]">Stylist brief</h2>
+              <div className="space-y-3 text-[#4f4338]">
+                {isLoading && (
+                  <div className="text-sm text-[#7c6c5e] flex items-center gap-2">
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                    Generating softer direction...
+                  </div>
+                )}
+                {!isLoading && aiLines.length === 0 && (
+                  <p className="text-sm text-[#8b7b6c]">You will see Lumi’s styling notes here after you submit a prompt.</p>
+                )}
+                {aiLines.map((line, idx) => (
+                  <div key={idx} className="p-3 rounded-lg border border-[#e5dacf] bg-[#f9f4ee] text-sm">
+                    {line}
+                  </div>
+                ))}
               </div>
-              <span className="text-xs text-slate-400">Real, shoppable links</span>
             </div>
-            {productError && !isShowcaseLoading && (
-              <p className="text-sm text-amber-200">{productError}</p>
-            )}
-            <div className="grid sm:grid-cols-2 gap-4">
-              {isShowcaseLoading && (
-                <div className="sm:col-span-2 flex items-center gap-2 text-slate-300 text-sm">
-                  <Loader2Icon className="h-4 w-4 animate-spin" />
-                  Curating product links—check back in a few seconds.
-                </div>
-              )}
-              {!isShowcaseLoading && showcase.length === 0 && (
-                <p className="text-slate-300 sm:col-span-2 text-sm">Type a prompt above to unlock shoppable picks tuned to your vibe.</p>
-              )}
-              {showcase.map(link => {
-                let domain = 'source';
-                try {
-                  domain = new URL(link).hostname.replace(/^www\./, '');
-                } catch (error) {
-                  console.error('Invalid link from showcase', link, error);
-                }
 
-                return (
-                  <a
-                    key={link}
-                    href={link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="relative block p-4 rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:border-white/30 transition group"
-                  >
-                    <div className="absolute inset-0 opacity-60 bg-gradient-to-br from-indigo-200/70 via-fuchsia-200/70 to-amber-200/70" aria-hidden />
-                    <div className="relative space-y-1">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-200 flex items-center gap-1">
-                        <Link2Icon className="h-4 w-4" />
-                        {domain}
-                      </p>
-                      <p className="text-lg font-semibold text-white group-hover:translate-x-1 transition">Shop this piece</p>
-                      <p className="text-sm text-slate-900/70 bg-white/80 px-2 py-1 rounded-full inline-flex items-center gap-2">
-                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                        Opens in new tab
-                      </p>
-                      <p className="text-sm text-slate-100/90 break-words">{link}</p>
-                    </div>
-                  </a>
-                );
-              })}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-[#3a2f25]">
+                <h2 className="text-lg font-semibold">Shop the signal</h2>
+                <span className="text-xs text-[#7c6c5e]">Real, shoppable links</span>
+              </div>
+              {productError && !isShowcaseLoading && (
+                <p className="text-sm text-[#9b4c2c]">{productError}</p>
+              )}
+              <div className="grid sm:grid-cols-2 gap-3">
+                {isShowcaseLoading && (
+                  <div className="sm:col-span-2 flex items-center gap-2 text-sm text-[#7c6c5e]">
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                    Curating product links—check back in a few seconds.
+                  </div>
+                )}
+                {!isShowcaseLoading && showcase.length === 0 && (
+                  <p className="text-sm text-[#8b7b6c] sm:col-span-2">Type a prompt above to unlock shoppable picks tuned to your vibe.</p>
+                )}
+                {showcase.map(link => {
+                  let domain = 'source';
+                  try {
+                    domain = new URL(link).hostname.replace(/^www\./, '');
+                  } catch (error) {
+                    console.error('Invalid link from showcase', link, error);
+                  }
+
+                  return (
+                    <a
+                      key={link}
+                      href={link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="relative block p-4 rounded-xl border border-[#e5dacf] bg-[#f9f4ee] hover:border-[#d2c4b5] transition"
+                    >
+                      <p className="text-xs uppercase tracking-[0.15em] text-[#7c6c5e] mb-1">{domain}</p>
+                      <p className="text-base font-semibold text-[#32281f]">Shop this piece</p>
+                      <p className="text-sm text-[#5f5246] break-words">{link}</p>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
-
-        <section className="glass-panel rounded-3xl p-6 border border-white/10">
-          <div className="flex items-center gap-2 mb-4">
-            <SparklesIcon className="h-5 w-5 text-fuchsia-200" />
-            <h2 className="text-xl font-semibold">Micro-interactions</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-4 text-slate-200">
-            <div className="p-4 rounded-2xl border border-white/10 bg-white/5">
-              <p className="text-sm text-slate-300 mb-1">Animated gradients</p>
-              <p>Background auroras drift subtly to keep the page feeling alive without distractions.</p>
-            </div>
-            <div className="p-4 rounded-2xl border border-white/10 bg-white/5">
-              <p className="text-sm text-slate-300 mb-1">Glass panels</p>
-              <p>Cards use softened borders, blur, and elevated shadows for a calm, modern surface.</p>
-            </div>
-            <div className="p-4 rounded-2xl border border-white/10 bg-white/5">
-              <p className="text-sm text-slate-300 mb-1">Link clarity</p>
-              <p>Every recommendation opens to a real product page so you can shop immediately.</p>
-            </div>
-          </div>
-        </section>
-      </div>
+      </main>
     </div>
   );
 }
