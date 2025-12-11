@@ -1,28 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { SparklesIcon, ArrowRightIcon, Wand2Icon, Loader2Icon, Link2Icon, StarsIcon } from 'lucide-react';
 
-type ProductLink = {
-  url: string;
-  title: string;
-  source: string;
+type DraftLookResponse = {
+  advice: string;
+  links: string[];
 };
 
-const fallbackProducts: ProductLink[] = [
-  {
-    title: 'Waterproof shell jacket',
-    url: 'https://www.arcteryx.com/us/en/shop/womens/beta-jacket',
-    source: 'arcteryx.com'
-  },
-  {
-    title: 'Ribbed mock-neck sweater',
-    url: 'https://www.everlane.com/products/womens-rib-knit-mockneck-sweater-heathered-sand',
-    source: 'everlane.com'
-  },
-  {
-    title: 'Pleated trouser in cool brown',
-    url: 'https://www.aritzia.com/us/en/product/the-effortless-pant/98721.html',
-    source: 'aritzia.com'
-  }
+const fallbackLinks = [
+  'https://www.arcteryx.com/us/en/shop/womens/beta-jacket',
+  'https://www.everlane.com/products/womens-rib-knit-mockneck-sweater-heathered-sand',
+  'https://www.aritzia.com/us/en/product/the-effortless-pant/98721.html'
 ];
 
 const samplePrompts = [
@@ -32,10 +19,7 @@ const samplePrompts = [
   'Night-out with metallics'
 ];
 
-const normalizeAiResponse = (value: string) => {
-  const lines = value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  return lines.map(line => line.replace(/^[-•\d.)\s]+/, ''));
-};
+const normalizeAiResponse = (value: string) => value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 
 export function App() {
   const [prompt, setPrompt] = useState('');
@@ -43,7 +27,7 @@ export function App() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowcaseLoading, setIsShowcaseLoading] = useState(false);
-  const [showcase, setShowcase] = useState<ProductLink[]>([]);
+  const [showcase, setShowcase] = useState<string[]>([]);
   const [productError, setProductError] = useState<string | null>(null);
 
   const aiLines = useMemo(() => (aiCopy ? normalizeAiResponse(aiCopy) : []), [aiCopy]);
@@ -64,57 +48,24 @@ export function App() {
     setProductError(null);
 
     try {
-      const stylePromise = fetch('/api/generate-style', {
+      const response = await fetch('/api/draft-look', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: query })
-      })
-        .then(async response => {
-          const data = await response.json();
-          if (!response.ok || typeof data?.response !== 'string') {
-            throw new Error(data?.error || 'Unable to generate response');
-          }
-          return data.response as string;
-        });
+      });
 
-      const productPromise = fetch('/api/search-products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: query })
-      })
-        .then(async response => {
-          const data = await response.json();
-          if (!response.ok || !Array.isArray(data?.results)) {
-            throw new Error(data?.error || 'Unable to fetch products');
-          }
-          return data.results as ProductLink[];
-        });
+      const data: Partial<DraftLookResponse> & { error?: string } = await response.json();
 
-      const [styleResult, productResult] = await Promise.allSettled([stylePromise, productPromise]);
-
-      if (styleResult.status === 'fulfilled') {
-        setAiCopy(styleResult.value);
-      } else {
-        setAiCopy(null);
-        setAiError('Could not reach the stylist right now. Try again in a few seconds.');
+      if (!response.ok || typeof data?.advice !== 'string' || !Array.isArray(data?.links)) {
+        throw new Error(data?.error || 'Unable to draft this look right now.');
       }
 
-      if (productResult.status === 'fulfilled') {
-        const items = productResult.value;
-        if (items.length === 0) {
-          setShowcase(fallbackProducts);
-          setProductError('No live product links yet. Showing staples while we search.');
-        } else {
-          setShowcase(items);
-        }
-      } else {
-        setShowcase(fallbackProducts);
-        setProductError('Could not fetch product links. Showing backup picks.');
-      }
+      setAiCopy(data.advice);
+      setShowcase(data.links);
     } catch (error) {
       console.error('Failed to fetch AI recommendation', error);
       setAiError('Could not reach the stylist right now. Try again in a few seconds.');
-      setShowcase(fallbackProducts);
+      setShowcase(fallbackLinks);
       setProductError('Could not fetch product links. Showing backup picks.');
     } finally {
       setIsLoading(false);
@@ -170,20 +121,20 @@ export function App() {
             </div>
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1 relative">
-                <input
+                <textarea
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder="Warm but professional with a hint of ease"
-                  className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 px-4 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400/70 backdrop-blur placeholder:text-slate-500"
+                  className="w-full h-28 rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400/70 backdrop-blur placeholder:text-slate-500 resize-none"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">Hit Enter ↵</span>
+                <span className="absolute right-4 bottom-3 text-xs text-slate-400">Free-type your vibe</span>
               </div>
               <button
                 type="submit"
                 className="h-14 px-6 rounded-2xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-400 text-slate-950 font-semibold flex items-center gap-2 shadow-[0_20px_60px_rgba(109,40,217,0.35)] hover:scale-[1.01] transition"
               >
                 {isLoading ? <Loader2Icon className="h-5 w-5 animate-spin" /> : <SparklesIcon className="h-5 w-5" />}
-                Draft my look
+                Draft My Look
               </button>
             </div>
             {aiError && <p className="text-sm text-amber-200">{aiError}</p>}
@@ -235,28 +186,38 @@ export function App() {
               {!isShowcaseLoading && showcase.length === 0 && (
                 <p className="text-slate-300 sm:col-span-2 text-sm">Type a prompt above to unlock shoppable picks tuned to your vibe.</p>
               )}
-              {showcase.map(product => (
-                <a
-                  key={product.url}
-                  href={product.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="relative block p-4 rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:border-white/30 transition group"
-                >
-                  <div className="absolute inset-0 opacity-60 bg-gradient-to-br from-indigo-200/70 via-fuchsia-200/70 to-amber-200/70" aria-hidden />
-                  <div className="relative space-y-1">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-200 flex items-center gap-1">
-                      <Link2Icon className="h-4 w-4" /> {product.source}
-                    </p>
-                    <p className="text-lg font-semibold text-white group-hover:translate-x-1 transition">{product.title}</p>
-                    <p className="text-sm text-slate-900/70 bg-white/80 px-2 py-1 rounded-full inline-flex items-center gap-2">
-                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                      Opens in new tab
-                    </p>
-                    <p className="text-sm text-slate-100/90 break-words">{product.url}</p>
-                  </div>
-                </a>
-              ))}
+              {showcase.map(link => {
+                let domain = 'source';
+                try {
+                  domain = new URL(link).hostname.replace(/^www\./, '');
+                } catch (error) {
+                  console.error('Invalid link from showcase', link, error);
+                }
+
+                return (
+                  <a
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative block p-4 rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:border-white/30 transition group"
+                  >
+                    <div className="absolute inset-0 opacity-60 bg-gradient-to-br from-indigo-200/70 via-fuchsia-200/70 to-amber-200/70" aria-hidden />
+                    <div className="relative space-y-1">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-200 flex items-center gap-1">
+                        <Link2Icon className="h-4 w-4" />
+                        {domain}
+                      </p>
+                      <p className="text-lg font-semibold text-white group-hover:translate-x-1 transition">Shop this piece</p>
+                      <p className="text-sm text-slate-900/70 bg-white/80 px-2 py-1 rounded-full inline-flex items-center gap-2">
+                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                        Opens in new tab
+                      </p>
+                      <p className="text-sm text-slate-100/90 break-words">{link}</p>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>

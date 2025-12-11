@@ -95,6 +95,17 @@ const truncateDataUrl = (value, max = 1800) => {
   return value.length > max ? `${value.slice(0, max)}...` : value;
 };
 
+const looksLikeProductPage = (urlString) => {
+  try {
+    const parsed = new URL(urlString);
+    const path = parsed.pathname.toLowerCase();
+    return /(product|prod|item|sku|p\b|shop|store)/.test(path) || path.split('/').filter(Boolean).length >= 2;
+  } catch (error) {
+    console.error('Invalid product URL candidate', urlString, error);
+    return false;
+  }
+};
+
 const buildDomainLabel = (urlString) => {
   try {
     const hostname = new URL(urlString).hostname.replace(/^www\./, '');
@@ -179,6 +190,101 @@ const handleSearchProducts = async (req, res) => {
   }
 };
 
+const handleDraftLook = async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
+  const apiKey = process.env.FIRECRAWL_API_KEY;
+  if (!apiKey) {
+    console.warn('FIRECRAWL_API_KEY is not configured on the server. Returning fallback links.');
+  }
+
+  try {
+    const body = await readBody(req);
+    const prompt = body?.prompt;
+
+    if (!prompt || typeof prompt !== 'string') {
+      sendJson(res, 400, { error: 'A prompt string is required.' });
+      return;
+    }
+
+    const aiAdvicePromise = fetch(`https://text.pollinations.ai/${encodeURIComponent(buildPrompt(prompt))}`, {
+      method: 'GET',
+      headers: { Accept: 'text/plain' }
+    })
+      .then(async response => {
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Pollinations error: ${response.status} ${errorText}`);
+        }
+        return (await response.text()).trim();
+      })
+      .catch(error => {
+        console.error('Draft look advice failed', error);
+        return `Here is a quick direction for "${prompt}": lean into clean silhouettes, layer smart basics, and anchor the look with one hero accessory.`;
+      });
+
+    const searchPromise = apiKey
+      ? fetch('https://api.firecrawl.dev/v1/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            query: `women's outfit ${prompt} site:shopbop.com OR site:nordstrom.com OR site:asos.com`,
+            pageOptions: { limit: 10 }
+          })
+        })
+          .then(async response => {
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Firecrawl search failed: ${response.status} ${errorText}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            const links = Array.isArray(data?.data)
+              ? data.data
+                  .map(item => item?.url)
+                  .filter(Boolean)
+                  .filter(looksLikeProductPage)
+                  .slice(0, 3)
+              : [];
+            return links;
+          })
+          .catch(error => {
+            console.error('Draft look product search failed', error);
+            return [];
+          })
+      : Promise.resolve([]);
+
+    const [advice, links] = await Promise.all([aiAdvicePromise, searchPromise]);
+    const finalLinks = links?.length ? links : [
+      'https://www.arcteryx.com/us/en/shop/womens/beta-jacket',
+      'https://www.everlane.com/products/womens-rib-knit-mockneck-sweater-heathered-sand',
+      'https://www.aritzia.com/us/en/product/the-effortless-pant/98721.html'
+    ];
+
+    sendJson(res, 200, { advice, links: finalLinks });
+  } catch (error) {
+    console.error('Draft look generation failed', error);
+    sendJson(res, 500, { error: 'Failed to draft look guidance.' });
+  }
+};
+
 const handleVirtualTryOn = async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -249,6 +355,11 @@ const server = createServer((req, res) => {
 
   if (req.url === '/api/search-products') {
     handleSearchProducts(req, res);
+    return;
+  }
+
+  if (req.url === '/api/draft-look') {
+    handleDraftLook(req, res);
     return;
   }
 
