@@ -1,17 +1,16 @@
-# StyleX
+# Lumi (Previously StyleX)
 
-StyleX is a Vite + React experience that pairs a simple Node server with a pollinations.ai backend to draft styling briefs and surface shoppable outfit suggestions.
+Lumi is a Vite + React experience that pairs a simple Node server with a [pollinations.ai](https://github.com/pollinations/pollinations) backend to create styling briefs and provide shoppable suggestions.
 
 ## Prerequisites
 - **Node.js** (v18 or newer recommended) which includes `npm`.
 - A terminal with internet access (required for installing dependencies and calling the pollinations API).
 
 ## Run locally from scratch
-Assuming nothing is installed yet:
 1. Install Node.js from [nodejs.org](https://nodejs.org/) (or via a version manager like `nvm`).
 2. Clone the repository:
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/jasroopdhingra/StyleX
    cd StyleX
    ```
 3. Install dependencies:
@@ -43,4 +42,4 @@ Assuming nothing is installed yet:
   ```
 
 ## Contribution
-Jasroop Dhingra is responsible for all files in this repository.
+Jasroop Dhingra is responsible for all files in this repository. For all inquires email dhingraj@bc.edu!
